@@ -194,6 +194,7 @@ reserveTerminal termName outFd colorMode = do
             -- I think fix would help assure tActual is the only
             -- reference. I was having issues tho.
             , mkDisplayContext = (`terminfoDisplayContext` terminfoCaps)
+            , setOutputWindowTitle = const $ return ()
             }
         sendCap s = sendCapToTerminal t (s terminfoCaps)
         maybeSendCap s = when (isJust $ s terminfoCaps) . sendCap (fromJust . s)

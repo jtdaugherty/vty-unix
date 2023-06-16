@@ -19,7 +19,7 @@ import Foreign.Ptr (castPtr)
 
 import Control.Monad (void, when)
 import Control.Monad.Trans
-import Data.Char (toLower)
+import Data.Char (toLower, isPrint, showLitChar)
 import Data.IORef
 
 import System.Posix.IO (fdWriteBuf)
@@ -95,6 +95,7 @@ reserveTerminal variant outFd colorMode = liftIO $ do
              , supportsMode = const True
              , getModeStatus = xtermGetMode
              , setMode = xtermSetMode t'
+             , setOutputWindowTitle = setWindowTitle t
              }
     return t'
 
@@ -126,3 +127,12 @@ xtermInlineHack :: Output -> IO ()
 xtermInlineHack t = do
     let writeReset = foldMap (writeWord8.toEnum.fromEnum) "\ESC[K"
     outputByteBuffer t $ writeToByteString writeReset
+
+setWindowTitle :: Output -> String -> IO ()
+setWindowTitle o title = do
+    let sanitize :: String -> String
+        sanitize = concatMap sanitizeChar
+        sanitizeChar c | not (isPrint c) = showLitChar c ""
+                       | otherwise = [c]
+    let buf = BS8.pack $ "\ESC]2;" <> sanitize title <> "\007"
+    outputByteBuffer o buf
