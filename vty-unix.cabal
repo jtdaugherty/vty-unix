@@ -32,6 +32,7 @@ library
                       Graphics.Vty.Platform.Unix.Input.Mouse
                       Graphics.Vty.Platform.Unix.Input.Classify
                       Graphics.Vty.Platform.Unix.Input.Classify.Parse
+                      Graphics.Vty.Platform.Unix.Input.Classify.Types
     build-depends:    base ^>=4.16.4.0,
                       blaze-builder,
                       bytestring,

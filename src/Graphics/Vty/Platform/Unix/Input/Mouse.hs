@@ -11,7 +11,7 @@ module Graphics.Vty.Platform.Unix.Input.Mouse
 where
 
 import Graphics.Vty.Input.Events
-import Graphics.Vty.Input.Classify.Types
+import Graphics.Vty.Platform.Unix.Input.Classify.Types
 import Graphics.Vty.Platform.Unix.Input.Classify.Parse
 
 import Control.Monad

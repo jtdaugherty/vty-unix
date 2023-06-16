@@ -22,10 +22,10 @@ where
 
 import Graphics.Vty.Config
 import Graphics.Vty.Input
-import Graphics.Vty.Input.Classify.Types
 import Graphics.Vty.Input.Events
 
 import Graphics.Vty.Platform.Unix.Input.Classify
+import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
 import Control.Applicative
 import Control.Concurrent

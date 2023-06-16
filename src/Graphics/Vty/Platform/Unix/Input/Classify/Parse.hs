@@ -11,7 +11,7 @@ module Graphics.Vty.Platform.Unix.Input.Classify.Parse
 where
 
 import Graphics.Vty.Input.Events
-import Graphics.Vty.Input.Classify.Types
+import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
 import Control.Monad.Trans.Maybe
 import Control.Monad.State

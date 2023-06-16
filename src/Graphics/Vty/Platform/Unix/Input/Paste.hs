@@ -12,7 +12,7 @@ import qualified Data.ByteString.Char8 as BS8
 import Data.ByteString.Char8 (ByteString)
 
 import Graphics.Vty.Input.Events
-import Graphics.Vty.Input.Classify.Types
+import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
 bracketedPasteStart :: ByteString
 bracketedPasteStart = BS8.pack "\ESC[200~"

@@ -8,8 +8,8 @@ module Graphics.Vty.Platform.Unix.Input.Classify
 where
 
 import Graphics.Vty.Input.Events
-import Graphics.Vty.Input.Classify.Types
 
+import Graphics.Vty.Platform.Unix.Input.Classify.Types
 import Graphics.Vty.Platform.Unix.Input.Mouse
 import Graphics.Vty.Platform.Unix.Input.Focus
 import Graphics.Vty.Platform.Unix.Input.Paste
