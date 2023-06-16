@@ -5,10 +5,10 @@ module Graphics.Vty.Platform.Unix.Output.XTermColor
 where
 
 import Graphics.Vty.Output.Interface
-import Graphics.Vty.Input.Mouse
-import Graphics.Vty.Input.Focus
+import Graphics.Vty.Platform.Unix.Input.Mouse
+import Graphics.Vty.Platform.Unix.Input.Focus
 import Graphics.Vty.Attributes.Color (ColorMode)
-import qualified Graphics.Vty.Output.TerminfoBased as TerminfoBased
+import qualified Graphics.Vty.Platform.Unix.Output.TerminfoBased as TerminfoBased
 
 import Blaze.ByteString.Builder (writeToByteString)
 import Blaze.ByteString.Builder.Word (writeWord8)

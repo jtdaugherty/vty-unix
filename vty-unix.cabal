@@ -20,15 +20,32 @@ library
     exposed-modules:  Data.Terminfo.Eval
                       Data.Terminfo.Parse
                       Graphics.Vty.Platform.Unix
+                      Graphics.Vty.Platform.Unix.Output
                       Graphics.Vty.Platform.Unix.Output.TerminfoBased
                       Graphics.Vty.Platform.Unix.Output.XTermColor
-                      Graphics.Vty.Platform.Unix.Input.Mouse
+                      Graphics.Vty.Platform.Unix.Input
+                      Graphics.Vty.Platform.Unix.Input.Loop
                       Graphics.Vty.Platform.Unix.Input.Terminfo
                       Graphics.Vty.Platform.Unix.Input.Terminfo.ANSIVT
+                      Graphics.Vty.Platform.Unix.Input.Focus
+                      Graphics.Vty.Platform.Unix.Input.Paste
+                      Graphics.Vty.Platform.Unix.Input.Mouse
+                      Graphics.Vty.Platform.Unix.Input.Classify
+                      Graphics.Vty.Platform.Unix.Input.Classify.Parse
     build-depends:    base ^>=4.16.4.0,
                       blaze-builder,
                       bytestring,
                       mtl,
                       unix,
                       terminfo,
-                      vty
+                      vty,
+                      deepseq,
+                      vector,
+                      parsec,
+                      containers,
+                      utf8-string,
+                      transformers,
+                      stm,
+                      microlens,
+                      microlens-mtl,
+                      microlens-th
