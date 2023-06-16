@@ -1,0 +1,22 @@
+cabal-version:      3.0
+name:               vty-unix
+version:            0.1.0.0
+synopsis:           Unix backend for Vty
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Jonathan Daugherty
+maintainer:         cygnus@foobox.com
+copyright:          (c) 2023 Jonathan Daugherty
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+    hs-source-dirs:   src
+    default-language: Haskell2010
+    exposed-modules:  Graphics.Vty.Platform.Unix
+    -- other-modules:
+    build-depends:    base ^>=4.16.4.0
