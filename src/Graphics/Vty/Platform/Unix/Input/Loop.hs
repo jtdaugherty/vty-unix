@@ -20,10 +20,10 @@ module Graphics.Vty.Platform.Unix.Input.Loop
   )
 where
 
-import Graphics.Vty.Config
 import Graphics.Vty.Input
 import Graphics.Vty.Input.Events
 
+import Graphics.Vty.Platform.Unix.Config
 import Graphics.Vty.Platform.Unix.Input.Classify
 import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
@@ -45,7 +45,6 @@ import Lens.Micro.TH
 import qualified Data.ByteString.Char8 as BS8
 import qualified Data.ByteString as BS
 import Data.ByteString.Char8 (ByteString)
-import Data.IORef
 import Data.Word (Word8)
 
 import Foreign (allocaArray)
@@ -104,13 +103,9 @@ emit event = do
 -- forkOS thread. That case satisfies precondition.
 readFromDevice :: InputM ByteString
 readFromDevice = do
-    newConfig <- (lift $ asks configRef) >>= liftIO . readIORef
-    oldConfig <- use appliedConfig
-    let Just fd = inputFd newConfig
-    when (newConfig /= oldConfig) $ do
-        logMsg $ "new config: " ++ show newConfig
-        liftIO $ applyConfig fd newConfig
-        appliedConfig .= newConfig
+    config <- use appliedConfig
+    let Just fd = inputFd config
+
     bufferPtr <- use $ inputBuffer.ptr
     maxBytes  <- use $ inputBuffer.size
     stringRep <- liftIO $ do
@@ -165,14 +160,14 @@ dropInvalid = do
             unprocessedBytes .= BS8.empty
         _ -> return ()
 
-runInputProcessorLoop :: ClassifyMap -> Input -> IO ()
-runInputProcessorLoop classifyTable input = do
+runInputProcessorLoop :: ClassifyMap -> Input -> Config -> IO ()
+runInputProcessorLoop classifyTable input config = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
-        s0 <- InputState BS8.empty ClassifierStart
-                <$> readIORef (configRef input)
-                <*> pure (InputBuffer bufferPtr bufferSize)
-                <*> pure (classify classifyTable)
+        let s0 = InputState BS8.empty ClassifierStart
+                    config
+                    (InputBuffer bufferPtr bufferSize)
+                    (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
 
 initInput :: Config -> ClassifyMap -> IO Input
@@ -184,8 +179,7 @@ initInput config classifyTable = do
     input <- Input <$> atomically newTChan
                    <*> pure (return ())
                    <*> pure (return ())
-                   <*> newIORef config
-    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input)
+    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input config)
                                  (\_ -> putMVar stopSync ())
     let killAndWait = do
           killThread inputThread

@@ -117,9 +117,9 @@ module Graphics.Vty.Platform.Unix.Input
   )
 where
 
-import Graphics.Vty.Config
 import Graphics.Vty.Input
 import Graphics.Vty.Input.Events
+import Graphics.Vty.Platform.Unix.Config
 import Graphics.Vty.Platform.Unix.Input.Loop
 import Graphics.Vty.Platform.Unix.Input.Terminfo (classifyMapForTerm)
 
