@@ -35,9 +35,10 @@ import Lens.Micro hiding ((<>~))
 import Lens.Micro.Mtl
 import Control.Monad (when, mzero, forM_)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans (lift)
 import Control.Monad.Trans.State (StateT(..), evalStateT)
 import Control.Monad.State.Class (MonadState, modify)
-import Control.Monad.Trans.Reader (ReaderT(..))
+import Control.Monad.Trans.Reader (ReaderT(..), asks)
 
 import Lens.Micro.TH
 
@@ -94,7 +95,7 @@ addBytesToProcess block = unprocessedBytes <>= block
 emit :: Event -> InputM ()
 emit event = do
     logMsg $ "parsed event: " ++ show event
-    view eventChannel >>= liftIO . atomically . flip writeTChan (InputEvent event)
+    (lift $ asks eventChannel) >>= liftIO . atomically . flip writeTChan (InputEvent event)
 
 -- The timing requirements are assured by the VMIN and VTIME set for the
 -- device.
@@ -103,7 +104,7 @@ emit event = do
 -- forkOS thread. That case satisfies precondition.
 readFromDevice :: InputM ByteString
 readFromDevice = do
-    newConfig <- view configRef >>= liftIO . readIORef
+    newConfig <- (lift $ asks configRef) >>= liftIO . readIORef
     oldConfig <- use appliedConfig
     let Just fd = inputFd newConfig
     when (newConfig /= oldConfig) $ do
@@ -169,7 +170,7 @@ runInputProcessorLoop classifyTable input = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
         s0 <- InputState BS8.empty ClassifierStart
-                <$> readIORef (_configRef input)
+                <$> readIORef (configRef input)
                 <*> pure (InputBuffer bufferPtr bufferSize)
                 <*> pure (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input

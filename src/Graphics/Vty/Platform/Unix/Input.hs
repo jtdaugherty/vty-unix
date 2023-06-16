@@ -124,7 +124,6 @@ import Graphics.Vty.Platform.Unix.Input.Loop
 import Graphics.Vty.Platform.Unix.Input.Terminfo (classifyMapForTerm)
 
 import Control.Concurrent.STM
-import Lens.Micro
 
 import qualified System.Console.Terminfo as Terminfo
 import System.Posix.Signals.Exts
@@ -158,7 +157,7 @@ inputForConfig config@Config{ termName = Just termName
     input <- initInput config activeInputMap
     let pokeIO = Catch $ do
             setAttrs
-            atomically $ writeTChan (input^.eventChannel) ResumeAfterSignal
+            atomically $ writeTChan (eventChannel input) ResumeAfterSignal
     _ <- installHandler windowChange pokeIO Nothing
     _ <- installHandler continueProcess pokeIO Nothing
 
