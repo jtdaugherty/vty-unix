@@ -20,6 +20,7 @@ library
     exposed-modules:  Graphics.Vty.Platform.Unix
                       Graphics.Vty.Platform.Unix.Output.TerminfoBased
                       Graphics.Vty.Platform.Unix.Output.XTermColor
+                      Graphics.Vty.Platform.Unix.Input.Mouse
     build-depends:    base ^>=4.16.4.0,
                       blaze-builder,
                       bytestring,
