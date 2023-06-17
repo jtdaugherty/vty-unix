@@ -128,6 +128,16 @@ xtermInlineHack t = do
     let writeReset = foldMap (writeWord8.toEnum.fromEnum) "\ESC[K"
     outputByteBuffer t $ writeToByteString writeReset
 
+-- This function emits an Xterm-compatible escape sequence that we
+-- anticipate will work for essentially all modern terminal emulators.
+-- Ideally we'd use a terminal capability for this, but there does not
+-- seem to exist a termcap for setting window titles. If you find that
+-- this function does not work for a given terminal emulator, please
+-- report the issue.
+--
+-- For details, see:
+--
+-- https://tldp.org/HOWTO/Xterm-Title-3.html
 setWindowTitle :: Output -> String -> IO ()
 setWindowTitle o title = do
     let sanitize :: String -> String
