@@ -27,7 +27,7 @@ mkVty userConfig mUnixConfig = do
 
     when (allowCustomUnicodeWidthTables userConfig /= Just False) $
         installCustomWidthTable (debugLog userConfig)
-                                (Just $ termName settings)
+                                (Just $ settingTermName settings)
                                 (termWidthMaps userConfig)
 
     input <- buildInput userConfig settings

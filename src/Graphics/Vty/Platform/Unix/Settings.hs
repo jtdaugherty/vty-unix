@@ -36,15 +36,15 @@ instance Exception VtyConfigurationError where
 
 -- | Runtime library settings for interacting with Unix terminals.
 data UnixSettings =
-    UnixSettings { vmin :: Int
-                 , vtime :: Int
-                 , inputFd :: Fd
+    UnixSettings { settingVmin :: Int
+                 , settingVtime :: Int
+                 , settingInputFd :: Fd
                  -- ^ The input file descriptor to use.
-                 , outputFd :: Fd
+                 , settingOutputFd :: Fd
                  -- ^ The output file descriptor to use.
-                 , termName :: String
+                 , settingTermName :: String
                  -- ^ The terminal name used to look up terminfo capabilities.
-                 , colorMode :: ColorMode
+                 , settingColorMode :: ColorMode
                  -- ^ The color mode used to know how many colors the terminal
                  -- supports.
                  }
@@ -57,12 +57,12 @@ defaultSettings = do
       Nothing -> throwIO VtyMissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
-        return $ UnixSettings { vmin      = 1
-                              , vtime     = 100
-                              , inputFd   = stdInput
-                              , outputFd  = stdOutput
-                              , termName  = t
-                              , colorMode = mcolorMode
+        return $ UnixSettings { settingVmin      = 1
+                              , settingVtime     = 100
+                              , settingInputFd   = stdInput
+                              , settingOutputFd  = stdOutput
+                              , settingTermName  = t
+                              , settingColorMode = mcolorMode
                               }
 
 termVariable :: String

@@ -147,16 +147,17 @@ import Data.Monoid ((<>))
 -- 'attributeControl' function.
 buildInput :: VtyUserConfig -> UnixSettings -> IO Input
 buildInput userConfig settings = do
-    let tName = termName settings
+    let tName = settingTermName settings
+        fd = settingInputFd settings
 
     terminal <- Terminfo.setupTerm tName
     let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just tName]
         activeInputMap = classifyMapForTerm tName terminal `mappend` inputOverrides
-    (setAttrs, unsetAttrs) <- attributeControl (inputFd settings)
+    (setAttrs, unsetAttrs) <- attributeControl fd
     setAttrs
-    input <- initInput (inputFd settings)
-                       (vmin settings)
-                       (vtime settings)
+    input <- initInput fd
+                       (settingVmin settings)
+                       (settingVtime settings)
                        activeInputMap
     let pokeIO = Catch $ do
             setAttrs

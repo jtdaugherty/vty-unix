@@ -51,8 +51,11 @@ import Data.Monoid ((<>))
 --      * If TERM starts with "xterm", "screen" or "tmux", use XTermColor.
 --      * otherwise use the TerminfoBased driver.
 buildOutput :: UnixSettings -> IO Output
-buildOutput UnixSettings { outputFd = fd, termName = termName
-                         , colorMode = colorMode } = do
+buildOutput settings = do
+    let termName = settingTermName settings
+        fd = settingOutputFd settings
+        colorMode = settingColorMode settings
+
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
          -- Not an xterm-like terminal. try for generic terminfo.
