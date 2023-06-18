@@ -11,7 +11,6 @@ import Graphics.Vty.Platform.Unix.Input.Classify.Types
 import Graphics.Vty.Platform.Unix.Input.Classify.Parse
 
 import Control.Monad
-import Control.Monad.State
 
 import qualified Data.ByteString.Char8 as BS8
 import Data.ByteString.Char8 (ByteString)
