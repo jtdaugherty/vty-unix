@@ -52,19 +52,11 @@ import Data.Monoid ((<>))
 --      * otherwise use the TerminfoBased driver.
 outputForConfig :: Config -> IO Output
 outputForConfig Config{ outputFd = Just fd, termName = Just termName
-                      , colorMode = Just colorMode, .. } = do
+                      , colorMode = Just colorMode } = do
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
          -- Not an xterm-like terminal. try for generic terminfo.
          else TerminfoBased.reserveTerminal termName fd colorMode
-
-    case mouseMode of
-        Just s -> setMode t Mouse s
-        Nothing -> return ()
-
-    case bracketedPasteMode of
-        Just s -> setMode t BracketedPaste s
-        Nothing -> return ()
 
     return t
 outputForConfig config = (<> config) <$> standardIOConfig >>= outputForConfig
