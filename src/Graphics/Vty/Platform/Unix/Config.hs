@@ -82,36 +82,14 @@
 -- to attempt to load and install the specified width map. See the
 -- documentation for 'Graphics.Vty.mkVty' for details.
 module Graphics.Vty.Platform.Unix.Config
-  ( InputMap
-  , Config(..)
-  , VtyConfigurationError(..)
-  , userConfig
-  , overrideEnvConfig
+  ( Config(..)
   , currentTerminalName
-  , runParseConfig
-  , parseConfigFile
-  , defaultConfig
   , standardIOConfig
-
-  , vtyConfigPath
-  , widthTableFilename
-  , vtyDataDirectory
-  , terminalWidthTablePath
-  , vtyConfigFileEnvName
-
-  , ConfigUpdateResult(..)
-  , addConfigWidthMap
   )
 where
 
-import Prelude
-
 import Control.Applicative hiding (many)
-
-import Control.Exception (catch, IOException, Exception(..), throwIO)
-import Control.Monad (liftM, guard, void)
-
-import qualified Data.ByteString as BS
+import Control.Exception (Exception(..), throwIO)
 #if !(MIN_VERSION_base(4,8,0))
 import Data.Monoid (Monoid(..))
 #endif
@@ -119,25 +97,11 @@ import Data.Monoid (Monoid(..))
 import Data.Semigroup (Semigroup(..))
 #endif
 import Data.Typeable (Typeable)
-
 import System.Posix.IO (stdInput, stdOutput)
-
-import Graphics.Vty.Input.Events
-import Graphics.Vty.Attributes.Color
-
-import GHC.Generics
-
-import System.Directory ( getAppUserDataDirectory, doesFileExist
-                        , createDirectoryIfMissing
-                        )
 import System.Environment (lookupEnv)
-import System.FilePath ((</>), takeDirectory)
 import System.Posix.Types (Fd(..))
 
-import Text.Parsec hiding ((<|>))
-import Text.Parsec.Token ( GenLanguageDef(..) )
-import qualified Text.Parsec.Token as P
-
+import Graphics.Vty.Attributes.Color
 import Graphics.Vty.Platform.Unix.Output.Color (detectColorMode)
 
 -- | Type of errors that can be thrown when configuring VTY
@@ -149,26 +113,12 @@ data VtyConfigurationError =
 instance Exception VtyConfigurationError where
     displayException VtyMissingTermEnvVar = "TERM environment variable not set"
 
--- | Mappings from input bytes to event in the order specified. Later
--- entries take precedence over earlier in the case multiple entries
--- have the same byte string.
-type InputMap = [(Maybe String, String, Event)]
-
--- | A Vty configuration.
+-- | A Vty configuration for Unix terminals.
 data Config =
     Config { vmin  :: Maybe Int
            -- ^ The default is 1 character.
            , vtime :: Maybe Int
            -- ^ The default is 100 milliseconds, 0.1 seconds.
-           , debugLog :: Maybe FilePath
-           -- ^ Debug information is appended to this file if not
-           -- Nothing.
-           , inputMap :: InputMap
-           -- ^ The (input byte, output event) pairs extend the internal
-           -- input table of VTY and the table from terminfo.
-           --
-           -- See "Graphics.Vty.Config" module documentation for
-           -- documentation of the @map@ directive.
            , inputFd :: Maybe Fd
            -- ^ The input file descriptor to use. The default is
            -- 'System.Posix.IO.stdInput'
@@ -178,19 +128,6 @@ data Config =
            , termName :: Maybe String
            -- ^ The terminal name used to look up terminfo capabilities.
            -- The default is the value of the TERM environment variable.
-           , termWidthMaps :: [(String, FilePath)]
-           -- ^ Terminal width map files.
-           , allowCustomUnicodeWidthTables :: Maybe Bool
-           -- ^ Whether to permit custom Unicode width table loading by
-           -- 'Graphics.Vty.mkVty'. @'Just' 'False'@ indicates that
-           -- table loading should not be performed. Other values permit
-           -- table loading.
-           --
-           -- If a table load is attempted and fails, information
-           -- about the failure will be logged to the debug log if the
-           -- configuration specifies one. If no custom table is loaded
-           -- (or if a load fails), the built-in character width table
-           -- will be used.
            , colorMode :: Maybe ColorMode
            -- ^ The color mode used to know how many colors the terminal
            -- supports.
@@ -205,14 +142,9 @@ instance Semigroup Config where
         -- latter config takes priority for everything but inputMap
         Config { vmin = vmin c1 <|> vmin c0
                , vtime = vtime c1 <|> vtime c0
-               , debugLog = debugLog c1 <|> debugLog c0
-               , inputMap = inputMap c0 <> inputMap c1
                , inputFd = inputFd c1 <|> inputFd c0
                , outputFd = outputFd c1 <|> outputFd c0
                , termName = termName c1 <|> termName c0
-               , termWidthMaps = termWidthMaps c1 <|> termWidthMaps c0
-               , allowCustomUnicodeWidthTables =
-                   allowCustomUnicodeWidthTables c1 <|> allowCustomUnicodeWidthTables c0
                , colorMode = colorMode c1 <|> colorMode c0
                }
 
@@ -220,29 +152,14 @@ instance Monoid Config where
     mempty =
         Config { vmin = Nothing
                , vtime = Nothing
-               , debugLog = mempty
-               , inputMap = mempty
                , inputFd = Nothing
                , outputFd = Nothing
                , termName = Nothing
-               , termWidthMaps = []
-               , allowCustomUnicodeWidthTables = Nothing
                , colorMode = Nothing
                }
 #if !(MIN_VERSION_base(4,11,0))
     mappend = (<>)
 #endif
-
-vtyDataDirectory :: IO FilePath
-vtyDataDirectory = getAppUserDataDirectory "vty"
-
-vtyConfigPath :: IO FilePath
-vtyConfigPath = do
-    dir <- vtyDataDirectory
-    return $ dir </> "config"
-
-vtyConfigFileEnvName :: String
-vtyConfigFileEnvName = "VTY_CONFIG_FILE"
 
 standardIOConfig :: IO Config
 standardIOConfig = do
@@ -260,196 +177,8 @@ standardIOConfig = do
           , colorMode          = Just mcolorMode
           }
 
--- | Load a configuration from 'vtyConfigPath' and @$VTY_CONFIG_FILE@.
-userConfig :: IO Config
-userConfig = do
-    configFile <- vtyConfigPath >>= parseConfigFile
-    overrideConfig <- maybe (return defaultConfig) parseConfigFile =<<
-        lookupEnv vtyConfigFileEnvName
-    let base = configFile <> overrideConfig
-    mappend base <$> overrideEnvConfig
-
-widthTableFilename :: String -> String
-widthTableFilename term = "width_table_" <> term <> ".dat"
-
 termVariable :: String
 termVariable = "TERM"
 
 currentTerminalName :: IO (Maybe String)
 currentTerminalName = lookupEnv termVariable
-
-terminalWidthTablePath :: IO (Maybe FilePath)
-terminalWidthTablePath = do
-    dataDir <- vtyDataDirectory
-    result <- lookupEnv termVariable
-    case result of
-        Nothing -> return Nothing
-        Just term -> do
-            return $ Just $ dataDir </> widthTableFilename term
-
-overrideEnvConfig :: IO Config
-overrideEnvConfig = do
-    d <- lookupEnv "VTY_DEBUG_LOG"
-    return $ defaultConfig { debugLog = d }
-
-parseConfigFile :: FilePath -> IO Config
-parseConfigFile path = do
-    catch (runParseConfig path <$> BS.readFile path)
-          (\(_ :: IOException) -> return defaultConfig)
-
-runParseConfig :: String -> BS.ByteString -> Config
-runParseConfig name cfgTxt =
-  case runParser parseConfig () name cfgTxt of
-    Right cfg -> cfg
-    Left{}    -> defaultConfig
-
-------------------------------------------------------------------------
-
-type Parser = Parsec BS.ByteString ()
-
-configLanguage :: Monad m => P.GenLanguageDef BS.ByteString () m
-configLanguage = LanguageDef
-    { commentStart    = "{-"
-    , commentEnd      = "-}"
-    , commentLine     = "--"
-    , nestedComments  = True
-    , identStart      = letter <|> char '_'
-    , identLetter     = alphaNum <|> oneOf "_'"
-    , opStart         = opLetter configLanguage
-    , opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
-    , reservedOpNames = []
-    , reservedNames   = []
-    , caseSensitive   = True
-    }
-
-configLexer :: Monad m => P.GenTokenParser BS.ByteString () m
-configLexer = P.makeTokenParser configLanguage
-
-mapDecl :: Parser Config
-mapDecl = do
-    "map" <- P.identifier configLexer
-    termIdent <- (char '_' >> P.whiteSpace configLexer >> return Nothing)
-             <|> (Just <$> P.stringLiteral configLexer)
-    bytes     <- P.stringLiteral configLexer
-    key       <- parseValue
-    modifiers <- parseValue
-    return defaultConfig { inputMap = [(termIdent, bytes, EvKey key modifiers)] }
-
-debugLogDecl :: Parser Config
-debugLogDecl = do
-    "debugLog" <- P.identifier configLexer
-    path       <- P.stringLiteral configLexer
-    return defaultConfig { debugLog = Just path }
-
-widthMapDecl :: Parser Config
-widthMapDecl = do
-    "widthMap" <- P.identifier configLexer
-    tName <- P.stringLiteral configLexer
-    path <- P.stringLiteral configLexer
-    return defaultConfig { termWidthMaps = [(tName, path)] }
-
-ignoreLine :: Parser ()
-ignoreLine = void $ manyTill anyChar newline
-
-parseConfig :: Parser Config
-parseConfig = liftM mconcat $ many $ do
-    P.whiteSpace configLexer
-    let directives = [try mapDecl, try debugLogDecl, try widthMapDecl]
-    choice directives <|> (ignoreLine >> return defaultConfig)
-
-class    Parse a        where parseValue :: Parser a
-instance Parse Char     where parseValue = P.charLiteral configLexer
-instance Parse Int      where parseValue = fromInteger <$> P.natural configLexer
-instance Parse Key      where parseValue = genericParse
-instance Parse Modifier where parseValue = genericParse
-instance Parse a => Parse [a] where
-  parseValue = P.brackets configLexer
-                 (parseValue `sepBy` P.symbol configLexer ",")
-
-------------------------------------------------------------------------
--- Derived parser for ADTs via generics
-------------------------------------------------------------------------
-
-genericParse :: (Generic a, GParse (Rep a)) => Parser a
-genericParse = to <$> gparse
-
-class    GParse f                      where gparse :: Parser (f a)
-instance GParse f => GParse (M1 S i f) where gparse = M1 <$> gparse
-instance GParse U1                     where gparse = return U1
-instance Parse a => GParse (K1 i a)    where gparse = K1 <$> parseValue
-
-instance (GParse f, GParse g) => GParse (f :*: g) where
-  gparse = (:*:) <$> gparse <*> gparse
-
-instance GParseAlts f => GParse (M1 D i f) where
-  gparse =
-    do con <- P.identifier configLexer
-       M1 <$> gparseAlts con
-
-------------------------------------------------------------------------
-
-class GParseAlts f where
-  gparseAlts :: String -> Parser (f a)
-
-instance (Constructor i, GParse f) => GParseAlts (M1 C i f) where
-  gparseAlts con =
-    do guard (con == conName (M1 Nothing :: C1 i Maybe a))
-       M1 <$> gparse
-
-instance (GParseAlts f, GParseAlts g) => GParseAlts (f :+: g) where
-  gparseAlts con = L1 <$> gparseAlts con <|> R1 <$> gparseAlts con
-
-instance GParseAlts V1 where gparseAlts _ = fail "GParse: V1"
-
-data ConfigUpdateResult =
-    ConfigurationCreated
-    | ConfigurationModified
-    | ConfigurationConflict String
-    | ConfigurationRedundant
-    deriving (Eq, Show)
-
--- | Add a @widthMap@ directive to the Vty configuration file at the
--- specified path.
---
--- If the configuration path refers to a configuration that already
--- contains the directive for the specified map and terminal type, the
--- configuration file will not be modified. If the file does not contain
--- the directive, it will be appended to the file.
---
--- If the configuration path does not exist, a new configuration file
--- will be created and any directories in the path will also be created.
---
--- This returns @True@ if the configuration was created or modified and
--- @False@ otherwise. This does not handle exceptions raised by file or
--- directory permissions issues.
-addConfigWidthMap :: FilePath
-                  -- ^ The configuration file path of the configuration
-                  -- to modify or create.
-                  -> String
-                  -- ^ The @TERM@ value for the @widthMap@ directive.
-                  -> FilePath
-                  -- ^ The width table file path for the directive.
-                  -> IO ConfigUpdateResult
-addConfigWidthMap configPath term tablePath = do
-    configEx <- doesFileExist configPath
-    if configEx
-       then updateConfig
-       else createConfig >> return ConfigurationCreated
-
-    where
-        directive = "widthMap " <> show term <> " " <> show tablePath <> "\n"
-
-        createConfig = do
-            let dir = takeDirectory configPath
-            createDirectoryIfMissing True dir
-            writeFile configPath directive
-
-        updateConfig = do
-            config <- parseConfigFile configPath
-            if (term, tablePath) `elem` termWidthMaps config
-               then return ConfigurationRedundant
-               else case lookup term (termWidthMaps config) of
-                   Just other -> return $ ConfigurationConflict other
-                   Nothing -> do
-                       appendFile configPath directive
-                       return ConfigurationModified

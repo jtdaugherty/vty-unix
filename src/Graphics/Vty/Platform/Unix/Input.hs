@@ -118,7 +118,9 @@ module Graphics.Vty.Platform.Unix.Input
 where
 
 import Graphics.Vty.Input
+import Graphics.Vty.Config (VtyUserConfig(..))
 import Graphics.Vty.Input.Events
+
 import Graphics.Vty.Platform.Unix.Config
 import Graphics.Vty.Platform.Unix.Input.Loop
 import Graphics.Vty.Platform.Unix.Input.Terminfo (classifyMapForTerm)
@@ -143,14 +145,14 @@ import Data.Monoid ((<>))
 --
 -- The terminal device's mode flags are configured by the
 -- 'attributeControl' function.
-inputForConfig :: Config -> IO Input
-inputForConfig config@Config{ termName = Just termName
-                            , inputFd = Just termFd
-                            , vmin = Just _
-                            , vtime = Just _
-                            , .. } = do
+inputForConfig :: VtyUserConfig -> Config -> IO Input
+inputForConfig userConfig config@Config{ termName = Just termName
+                                       , inputFd = Just termFd
+                                       , vmin = Just _
+                                       , vtime = Just _
+                                       } = do
     terminal <- Terminfo.setupTerm termName
-    let inputOverrides = [(s,e) | (t,s,e) <- inputMap, t == Nothing || t == Just termName]
+    let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just termName]
         activeInputMap = classifyMapForTerm termName terminal `mappend` inputOverrides
     (setAttrs, unsetAttrs) <- attributeControl termFd
     setAttrs
@@ -171,7 +173,8 @@ inputForConfig config@Config{ termName = Just termName
             restore
         , restoreInputState = restoreInputState input >> restore
         }
-inputForConfig config = (<> config) <$> standardIOConfig >>= inputForConfig
+inputForConfig userConfig config =
+    (<> config) <$> standardIOConfig >>= inputForConfig userConfig
 
 -- | Construct two IO actions: one to configure the terminal for Vty and
 -- one to restore the terminal mode flags to the values they had at the

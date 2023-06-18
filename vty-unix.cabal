@@ -54,6 +54,4 @@ library
                       stm,
                       microlens,
                       microlens-mtl,
-                      microlens-th,
-                      directory,
-                      filepath
+                      microlens-th
