@@ -15,7 +15,6 @@ import Blaze.ByteString.Builder
 import Data.Terminfo.Parse
 
 import Control.Monad
-import Control.Monad.Identity
 import Control.Monad.State.Strict
 import Control.Monad.Writer
 
@@ -36,9 +35,11 @@ type Eval a = StateT EvalState (Writer Write) a
 pop :: Eval CapParam
 pop = do
     s <- get
-    let v : stack' = evalStack s
-        s' = s { evalStack = stack' }
-    put s'
+    (v, stack') <- case evalStack s of
+        [] -> error "BUG: Data.Terminfo.Eval.pop: failed to pop from empty stack"
+        v:s' -> return (v, s')
+
+    put $ s { evalStack = stack' }
     return v
 
 readParam :: Word -> Eval CapParam
