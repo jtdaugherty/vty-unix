@@ -32,7 +32,7 @@ import Control.Concurrent.STM
 import Control.Exception (mask, try, SomeException)
 import Lens.Micro hiding ((<>~))
 import Lens.Micro.Mtl
-import Control.Monad (when, mzero, forM_)
+import Control.Monad (when, mzero, forM_, forever)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.State (StateT(..), evalStateT)
@@ -82,12 +82,11 @@ logMsg msg = do
 -- otherwise the terminal timing read behavior will block the execution
 -- of the lightweight threads.
 loopInputProcessor :: InputM ()
-loopInputProcessor = do
+loopInputProcessor = forever $ do
     readFromDevice >>= addBytesToProcess
     validEvents <- many parseEvent
     forM_ validEvents emit
     dropInvalid
-    loopInputProcessor
 
 addBytesToProcess :: ByteString -> InputM ()
 addBytesToProcess block = unprocessedBytes <>= block
