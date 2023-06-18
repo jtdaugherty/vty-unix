@@ -8,6 +8,7 @@ module Graphics.Vty.Platform.Unix.Input.Terminfo
   )
 where
 
+import Data.Maybe (mapMaybe)
 import Graphics.Vty.Input.Events
 import qualified Graphics.Vty.Platform.Unix.Input.Terminfo.ANSIVT as ANSIVT
 
@@ -88,7 +89,10 @@ ctrlChars =
 
 -- | Ctrl+Meta+Char
 ctrlMetaChars :: ClassifyMap
-ctrlMetaChars = map (\(s,EvKey c m) -> ('\ESC':s, EvKey c (MMeta:m))) ctrlChars
+ctrlMetaChars = mapMaybe f ctrlChars
+    where
+        f (s, EvKey c m) = Just ('\ESC':s, EvKey c (MMeta:m))
+        f _ = Nothing
 
 -- | Esc, meta-esc, delete, meta-delete, enter, meta-enter.
 specialSupportKeys :: ClassifyMap
