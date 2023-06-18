@@ -65,6 +65,7 @@ data InputState = InputState
     { _unprocessedBytes :: ByteString
     , _classifierState :: ClassifierState
     , _appliedConfig :: Config
+    , _originalInput :: Input
     , _inputBuffer :: InputBuffer
     , _classifier :: ClassifierState -> ByteString -> KClass
     }
@@ -74,8 +75,9 @@ makeLenses ''InputState
 type InputM a = StateT InputState (ReaderT Input IO) a
 
 logMsg :: String -> InputM ()
-logMsg msg =
-    error "FIXME: was: d <- view inputDebug; case d of Nothing -> return (); Just h -> liftIO $ hPutStrLn h msg >> hFlush h"
+logMsg msg = do
+    i <- use originalInput
+    liftIO $ inputLogMsg i msg
 
 -- this must be run on an OS thread dedicated to this input handling.
 -- otherwise the terminal timing read behavior will block the execution
@@ -165,7 +167,7 @@ runInputProcessorLoop classifyTable input config = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
         let s0 = InputState BS8.empty ClassifierStart
-                    config
+                    config input
                     (InputBuffer bufferPtr bufferSize)
                     (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
@@ -179,6 +181,7 @@ initInput config classifyTable = do
     input <- Input <$> atomically newTChan
                    <*> pure (return ())
                    <*> pure (return ())
+                   <*> pure (const $ return ())
     inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input config)
                                  (\_ -> putMVar stopSync ())
     let killAndWait = do
