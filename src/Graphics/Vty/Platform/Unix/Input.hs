@@ -146,15 +146,18 @@ import Data.Monoid ((<>))
 -- The terminal device's mode flags are configured by the
 -- 'attributeControl' function.
 buildInput :: VtyUserConfig -> UnixSettings -> IO Input
-buildInput userConfig settings@UnixSettings{ termName = termName
-                                           , inputFd = termFd
-                                           } = do
-    terminal <- Terminfo.setupTerm termName
-    let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just termName]
-        activeInputMap = classifyMapForTerm termName terminal `mappend` inputOverrides
-    (setAttrs, unsetAttrs) <- attributeControl termFd
+buildInput userConfig settings = do
+    let tName = termName settings
+
+    terminal <- Terminfo.setupTerm tName
+    let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just tName]
+        activeInputMap = classifyMapForTerm tName terminal `mappend` inputOverrides
+    (setAttrs, unsetAttrs) <- attributeControl (inputFd settings)
     setAttrs
-    input <- initInput settings activeInputMap
+    input <- initInput (inputFd settings)
+                       (vmin settings)
+                       (vtime settings)
+                       activeInputMap
     let pokeIO = Catch $ do
             setAttrs
             atomically $ writeTChan (eventChannel input) ResumeAfterSignal

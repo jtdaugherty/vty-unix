@@ -23,7 +23,6 @@ where
 import Graphics.Vty.Input
 import Graphics.Vty.Input.Events
 
-import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Classify
 import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
@@ -64,7 +63,7 @@ makeLenses ''InputBuffer
 data InputState = InputState
     { _unprocessedBytes :: ByteString
     , _classifierState :: ClassifierState
-    , _appliedSettings :: UnixSettings
+    , _deviceFd :: Fd
     , _originalInput :: Input
     , _inputBuffer :: InputBuffer
     , _classifier :: ClassifierState -> ByteString -> KClass
@@ -105,8 +104,7 @@ emit event = do
 -- forkOS thread. That case satisfies precondition.
 readFromDevice :: InputM ByteString
 readFromDevice = do
-    settings <- use appliedSettings
-    let fd = inputFd settings
+    fd <- use deviceFd
 
     bufferPtr <- use $ inputBuffer.ptr
     maxBytes  <- use $ inputBuffer.size
@@ -124,10 +122,6 @@ readFromDevice = do
     when (not $ BS.null stringRep) $
         logMsg $ "input bytes: " ++ show (BS8.unpack stringRep)
     return stringRep
-
-applySettings :: Fd -> UnixSettings -> IO ()
-applySettings fd (UnixSettings{ vmin = theVmin, vtime = theVtime })
-    = setTermTiming fd theVmin (theVtime `div` 100)
 
 parseEvent :: InputM Event
 parseEvent = do
@@ -161,27 +155,27 @@ dropInvalid = do
             unprocessedBytes .= BS8.empty
         _ -> return ()
 
-runInputProcessorLoop :: ClassifyMap -> Input -> UnixSettings -> IO ()
-runInputProcessorLoop classifyTable input settings = do
+runInputProcessorLoop :: ClassifyMap -> Input -> Fd -> IO ()
+runInputProcessorLoop classifyTable input devFd = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
         let s0 = InputState BS8.empty ClassifierStart
-                    settings input
+                    devFd input
                     (InputBuffer bufferPtr bufferSize)
                     (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
 
-initInput :: UnixSettings -> ClassifyMap -> IO Input
-initInput settings classifyTable = do
-    let fd = inputFd settings
-    setFdOption fd NonBlockingRead False
-    applySettings fd settings
+initInput :: Fd -> Int -> Int -> ClassifyMap -> IO Input
+initInput devFd theVmin theVtime classifyTable = do
+    setFdOption devFd NonBlockingRead False
+    setTermTiming devFd theVmin (theVtime `div` 100)
+
     stopSync <- newEmptyMVar
     input <- Input <$> atomically newTChan
                    <*> pure (return ())
                    <*> pure (return ())
                    <*> pure (const $ return ())
-    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input settings)
+    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input devFd)
                                  (\_ -> putMVar stopSync ())
     let killAndWait = do
           killThread inputThread
