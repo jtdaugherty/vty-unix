@@ -56,7 +56,7 @@ universalTable = concat [visibleChars, ctrlChars, ctrlMetaChars, specialSupportK
 
 capsClassifyMap :: Terminal -> [(String,Event)] -> ClassifyMap
 capsClassifyMap terminal table = [(x,y) | (Just x,y) <- map extractCap table]
-    where extractCap = first (getCapability terminal . tiGetStr)
+    where extractCap = first (getCapability terminal . tiGetOutput1)
 
 -- | Tables specific to a given terminal that are not derivable from
 -- terminfo.
