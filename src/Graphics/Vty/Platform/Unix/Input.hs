@@ -112,7 +112,7 @@
 --
 -- * http://www.leonerd.org.uk/hacks/fixterms/
 module Graphics.Vty.Platform.Unix.Input
-  ( inputForConfig
+  ( buildInput
   , attributeControl
   )
 where
@@ -121,7 +121,7 @@ import Graphics.Vty.Input
 import Graphics.Vty.Config (VtyUserConfig(..))
 import Graphics.Vty.Input.Events
 
-import Graphics.Vty.Platform.Unix.Config
+import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Loop
 import Graphics.Vty.Platform.Unix.Input.Terminfo (classifyMapForTerm)
 
@@ -145,8 +145,8 @@ import Data.Monoid ((<>))
 --
 -- The terminal device's mode flags are configured by the
 -- 'attributeControl' function.
-inputForConfig :: VtyUserConfig -> UnixConfig -> IO Input
-inputForConfig userConfig config@UnixConfig{ termName = termName
+buildInput :: VtyUserConfig -> UnixSettings -> IO Input
+buildInput userConfig settings@UnixSettings{ termName = termName
                                            , inputFd = termFd
                                            } = do
     terminal <- Terminfo.setupTerm termName
@@ -154,7 +154,7 @@ inputForConfig userConfig config@UnixConfig{ termName = termName
         activeInputMap = classifyMapForTerm termName terminal `mappend` inputOverrides
     (setAttrs, unsetAttrs) <- attributeControl termFd
     setAttrs
-    input <- initInput config activeInputMap
+    input <- initInput settings activeInputMap
     let pokeIO = Catch $ do
             setAttrs
             atomically $ writeTChan (eventChannel input) ResumeAfterSignal

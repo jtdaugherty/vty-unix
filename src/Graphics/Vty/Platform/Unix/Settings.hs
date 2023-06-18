@@ -3,10 +3,10 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Graphics.Vty.Platform.Unix.Config
-  ( UnixConfig(..)
+module Graphics.Vty.Platform.Unix.Settings
+  ( UnixSettings(..)
   , currentTerminalName
-  , standardIOConfig
+  , defaultSettings
   )
 where
 
@@ -34,36 +34,36 @@ data VtyConfigurationError =
 instance Exception VtyConfigurationError where
     displayException VtyMissingTermEnvVar = "TERM environment variable not set"
 
--- | A Vty configuration for Unix terminals.
-data UnixConfig =
-    UnixConfig { vmin :: Int
-               , vtime :: Int
-               , inputFd :: Fd
-               -- ^ The input file descriptor to use.
-               , outputFd :: Fd
-               -- ^ The output file descriptor to use.
-               , termName :: String
-               -- ^ The terminal name used to look up terminfo capabilities.
-               , colorMode :: ColorMode
-               -- ^ The color mode used to know how many colors the terminal
-               -- supports.
-               }
-               deriving (Show, Eq)
+-- | Runtime library settings for interacting with Unix terminals.
+data UnixSettings =
+    UnixSettings { vmin :: Int
+                 , vtime :: Int
+                 , inputFd :: Fd
+                 -- ^ The input file descriptor to use.
+                 , outputFd :: Fd
+                 -- ^ The output file descriptor to use.
+                 , termName :: String
+                 -- ^ The terminal name used to look up terminfo capabilities.
+                 , colorMode :: ColorMode
+                 -- ^ The color mode used to know how many colors the terminal
+                 -- supports.
+                 }
+                 deriving (Show, Eq)
 
-standardIOConfig :: IO UnixConfig
-standardIOConfig = do
+defaultSettings :: IO UnixSettings
+defaultSettings = do
     mb <- lookupEnv termVariable
     case mb of
       Nothing -> throwIO VtyMissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
-        return $ UnixConfig { vmin      = 1
-                            , vtime     = 100
-                            , inputFd   = stdInput
-                            , outputFd  = stdOutput
-                            , termName  = t
-                            , colorMode = mcolorMode
-                            }
+        return $ UnixSettings { vmin      = 1
+                              , vtime     = 100
+                              , inputFd   = stdInput
+                              , outputFd  = stdOutput
+                              , termName  = t
+                              , colorMode = mcolorMode
+                              }
 
 termVariable :: String
 termVariable = "TERM"

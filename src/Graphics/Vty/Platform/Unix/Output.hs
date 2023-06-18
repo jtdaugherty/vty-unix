@@ -20,13 +20,13 @@
 -- where @TERM@ begins with @xterm@. This does use terminfo for as many
 -- control codes as possible.
 module Graphics.Vty.Platform.Unix.Output
-  ( outputForConfig
+  ( buildOutput
   )
 where
 
 import Graphics.Vty.Output.Interface
 
-import Graphics.Vty.Platform.Unix.Config
+import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Output.XTermColor as XTermColor
 import Graphics.Vty.Platform.Unix.Output.TerminfoBased as TerminfoBased
 
@@ -36,7 +36,7 @@ import Data.List (isPrefixOf)
 import Data.Monoid ((<>))
 #endif
 
--- | Returns an `Output` for the terminal specified in `UnixConfig`.
+-- | Returns an `Output` for the terminal specified in `UnixSettings`.
 --
 -- The specific Output implementation used is hidden from the API user.
 -- All terminal implementations are assumed to perform more, or less,
@@ -50,9 +50,9 @@ import Data.Monoid ((<>))
 --
 --      * If TERM starts with "xterm", "screen" or "tmux", use XTermColor.
 --      * otherwise use the TerminfoBased driver.
-outputForConfig :: UnixConfig -> IO Output
-outputForConfig UnixConfig { outputFd = fd, termName = termName
-                           , colorMode = colorMode } = do
+buildOutput :: UnixSettings -> IO Output
+buildOutput UnixSettings { outputFd = fd, termName = termName
+                         , colorMode = colorMode } = do
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
          -- Not an xterm-like terminal. try for generic terminfo.

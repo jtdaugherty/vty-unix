@@ -23,7 +23,7 @@ where
 import Graphics.Vty.Input
 import Graphics.Vty.Input.Events
 
-import Graphics.Vty.Platform.Unix.Config
+import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Classify
 import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
@@ -64,7 +64,7 @@ makeLenses ''InputBuffer
 data InputState = InputState
     { _unprocessedBytes :: ByteString
     , _classifierState :: ClassifierState
-    , _appliedConfig :: UnixConfig
+    , _appliedSettings :: UnixSettings
     , _originalInput :: Input
     , _inputBuffer :: InputBuffer
     , _classifier :: ClassifierState -> ByteString -> KClass
@@ -105,8 +105,8 @@ emit event = do
 -- forkOS thread. That case satisfies precondition.
 readFromDevice :: InputM ByteString
 readFromDevice = do
-    config <- use appliedConfig
-    let fd = inputFd config
+    settings <- use appliedSettings
+    let fd = inputFd settings
 
     bufferPtr <- use $ inputBuffer.ptr
     maxBytes  <- use $ inputBuffer.size
@@ -125,8 +125,8 @@ readFromDevice = do
         logMsg $ "input bytes: " ++ show (BS8.unpack stringRep)
     return stringRep
 
-applyConfig :: Fd -> UnixConfig -> IO ()
-applyConfig fd (UnixConfig{ vmin = theVmin, vtime = theVtime })
+applySettings :: Fd -> UnixSettings -> IO ()
+applySettings fd (UnixSettings{ vmin = theVmin, vtime = theVtime })
     = setTermTiming fd theVmin (theVtime `div` 100)
 
 parseEvent :: InputM Event
@@ -161,27 +161,27 @@ dropInvalid = do
             unprocessedBytes .= BS8.empty
         _ -> return ()
 
-runInputProcessorLoop :: ClassifyMap -> Input -> UnixConfig -> IO ()
-runInputProcessorLoop classifyTable input config = do
+runInputProcessorLoop :: ClassifyMap -> Input -> UnixSettings -> IO ()
+runInputProcessorLoop classifyTable input settings = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
         let s0 = InputState BS8.empty ClassifierStart
-                    config input
+                    settings input
                     (InputBuffer bufferPtr bufferSize)
                     (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
 
-initInput :: UnixConfig -> ClassifyMap -> IO Input
-initInput config classifyTable = do
-    let fd = inputFd config
+initInput :: UnixSettings -> ClassifyMap -> IO Input
+initInput settings classifyTable = do
+    let fd = inputFd settings
     setFdOption fd NonBlockingRead False
-    applyConfig fd config
+    applySettings fd settings
     stopSync <- newEmptyMVar
     input <- Input <$> atomically newTChan
                    <*> pure (return ())
                    <*> pure (return ())
                    <*> pure (const $ return ())
-    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input config)
+    inputThread <- forkOSFinally (runInputProcessorLoop classifyTable input settings)
                                  (\_ -> putMVar stopSync ())
     let killAndWait = do
           killThread inputThread
