@@ -106,7 +106,7 @@ emit event = do
 readFromDevice :: InputM ByteString
 readFromDevice = do
     config <- use appliedConfig
-    let Just fd = inputFd config
+    let fd = inputFd config
 
     bufferPtr <- use $ inputBuffer.ptr
     maxBytes  <- use $ inputBuffer.size
@@ -126,9 +126,8 @@ readFromDevice = do
     return stringRep
 
 applyConfig :: Fd -> Config -> IO ()
-applyConfig fd (Config{ vmin = Just theVmin, vtime = Just theVtime })
+applyConfig fd (Config{ vmin = theVmin, vtime = theVtime })
     = setTermTiming fd theVmin (theVtime `div` 100)
-applyConfig _ _ = fail "(vty) applyConfig was not provided a complete configuration"
 
 parseEvent :: InputM Event
 parseEvent = do
@@ -174,7 +173,7 @@ runInputProcessorLoop classifyTable input config = do
 
 initInput :: Config -> ClassifyMap -> IO Input
 initInput config classifyTable = do
-    let Just fd = inputFd config
+    let fd = inputFd config
     setFdOption fd NonBlockingRead False
     applyConfig fd config
     stopSync <- newEmptyMVar

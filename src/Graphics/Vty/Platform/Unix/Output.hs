@@ -51,15 +51,14 @@ import Data.Monoid ((<>))
 --      * If TERM starts with "xterm", "screen" or "tmux", use XTermColor.
 --      * otherwise use the TerminfoBased driver.
 outputForConfig :: Config -> IO Output
-outputForConfig Config{ outputFd = Just fd, termName = Just termName
-                      , colorMode = Just colorMode } = do
+outputForConfig Config{ outputFd = fd, termName = termName
+                      , colorMode = colorMode } = do
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
          -- Not an xterm-like terminal. try for generic terminfo.
          else TerminfoBased.reserveTerminal termName fd colorMode
 
     return t
-outputForConfig config = (<> config) <$> standardIOConfig >>= outputForConfig
 
 isXtermLike :: String -> Bool
 isXtermLike termName =

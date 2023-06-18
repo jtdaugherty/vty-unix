@@ -88,7 +88,6 @@ module Graphics.Vty.Platform.Unix.Config
   )
 where
 
-import Control.Applicative hiding (many)
 import Control.Exception (Exception(..), throwIO)
 #if !(MIN_VERSION_base(4,8,0))
 import Data.Monoid (Monoid(..))
@@ -115,51 +114,24 @@ instance Exception VtyConfigurationError where
 
 -- | A Vty configuration for Unix terminals.
 data Config =
-    Config { vmin  :: Maybe Int
+    Config { vmin :: Int
            -- ^ The default is 1 character.
-           , vtime :: Maybe Int
+           , vtime :: Int
            -- ^ The default is 100 milliseconds, 0.1 seconds.
-           , inputFd :: Maybe Fd
+           , inputFd :: Fd
            -- ^ The input file descriptor to use. The default is
            -- 'System.Posix.IO.stdInput'
-           , outputFd :: Maybe Fd
+           , outputFd :: Fd
            -- ^ The output file descriptor to use. The default is
            -- 'System.Posix.IO.stdOutput'
-           , termName :: Maybe String
+           , termName :: String
            -- ^ The terminal name used to look up terminfo capabilities.
            -- The default is the value of the TERM environment variable.
-           , colorMode :: Maybe ColorMode
+           , colorMode :: ColorMode
            -- ^ The color mode used to know how many colors the terminal
            -- supports.
            }
            deriving (Show, Eq)
-
-defaultConfig :: Config
-defaultConfig = mempty
-
-instance Semigroup Config where
-    c0 <> c1 =
-        -- latter config takes priority for everything but inputMap
-        Config { vmin = vmin c1 <|> vmin c0
-               , vtime = vtime c1 <|> vtime c0
-               , inputFd = inputFd c1 <|> inputFd c0
-               , outputFd = outputFd c1 <|> outputFd c0
-               , termName = termName c1 <|> termName c0
-               , colorMode = colorMode c1 <|> colorMode c0
-               }
-
-instance Monoid Config where
-    mempty =
-        Config { vmin = Nothing
-               , vtime = Nothing
-               , inputFd = Nothing
-               , outputFd = Nothing
-               , termName = Nothing
-               , colorMode = Nothing
-               }
-#if !(MIN_VERSION_base(4,11,0))
-    mappend = (<>)
-#endif
 
 standardIOConfig :: IO Config
 standardIOConfig = do
@@ -168,14 +140,13 @@ standardIOConfig = do
       Nothing -> throwIO VtyMissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
-        return defaultConfig
-          { vmin               = Just 1
-          , vtime              = Just 100
-          , inputFd            = Just stdInput
-          , outputFd           = Just stdOutput
-          , termName           = Just t
-          , colorMode          = Just mcolorMode
-          }
+        return $ Config { vmin      = 1
+                        , vtime     = 100
+                        , inputFd   = stdInput
+                        , outputFd  = stdOutput
+                        , termName  = t
+                        , colorMode = mcolorMode
+                        }
 
 termVariable :: String
 termVariable = "TERM"

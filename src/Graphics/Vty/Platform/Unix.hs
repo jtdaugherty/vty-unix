@@ -4,6 +4,7 @@ module Graphics.Vty.Platform.Unix
 where
 
 import Control.Monad (when)
+import Data.Maybe (fromMaybe)
 
 import Graphics.Vty (Vty, installCustomWidthTable, mkVtyFromPair)
 import Graphics.Vty.Config (VtyUserConfig(..))
@@ -20,11 +21,13 @@ import Graphics.Vty.Platform.Unix.Input
 -- precedence. See "Graphics.Vty.Config".
 --
 -- For most applications @mkVty defaultConfig@ is sufficient.
-mkVty :: VtyUserConfig -> Config -> IO Vty
-mkVty userConfig appConfig = do
+mkVty :: VtyUserConfig -> Maybe Config -> IO Vty
+mkVty userConfig mAppConfig = do
+    appConfig <- fromMaybe <$> standardIOConfig <*> pure mAppConfig
+
     when (allowCustomUnicodeWidthTables userConfig /= Just False) $
         installCustomWidthTable (debugLog userConfig)
-                                (termName appConfig)
+                                (Just $ termName appConfig)
                                 (termWidthMaps userConfig)
 
     input <- inputForConfig userConfig appConfig
