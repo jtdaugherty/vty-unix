@@ -64,7 +64,7 @@ makeLenses ''InputBuffer
 data InputState = InputState
     { _unprocessedBytes :: ByteString
     , _classifierState :: ClassifierState
-    , _appliedConfig :: Config
+    , _appliedConfig :: UnixConfig
     , _originalInput :: Input
     , _inputBuffer :: InputBuffer
     , _classifier :: ClassifierState -> ByteString -> KClass
@@ -125,8 +125,8 @@ readFromDevice = do
         logMsg $ "input bytes: " ++ show (BS8.unpack stringRep)
     return stringRep
 
-applyConfig :: Fd -> Config -> IO ()
-applyConfig fd (Config{ vmin = theVmin, vtime = theVtime })
+applyConfig :: Fd -> UnixConfig -> IO ()
+applyConfig fd (UnixConfig{ vmin = theVmin, vtime = theVtime })
     = setTermTiming fd theVmin (theVtime `div` 100)
 
 parseEvent :: InputM Event
@@ -161,7 +161,7 @@ dropInvalid = do
             unprocessedBytes .= BS8.empty
         _ -> return ()
 
-runInputProcessorLoop :: ClassifyMap -> Input -> Config -> IO ()
+runInputProcessorLoop :: ClassifyMap -> Input -> UnixConfig -> IO ()
 runInputProcessorLoop classifyTable input config = do
     let bufferSize = 1024
     allocaArray bufferSize $ \(bufferPtr :: Ptr Word8) -> do
@@ -171,7 +171,7 @@ runInputProcessorLoop classifyTable input config = do
                     (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
 
-initInput :: Config -> ClassifyMap -> IO Input
+initInput :: UnixConfig -> ClassifyMap -> IO Input
 initInput config classifyTable = do
     let fd = inputFd config
     setFdOption fd NonBlockingRead False

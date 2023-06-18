@@ -82,7 +82,7 @@
 -- to attempt to load and install the specified width map. See the
 -- documentation for 'Graphics.Vty.mkVty' for details.
 module Graphics.Vty.Platform.Unix.Config
-  ( Config(..)
+  ( UnixConfig(..)
   , currentTerminalName
   , standardIOConfig
   )
@@ -113,40 +113,40 @@ instance Exception VtyConfigurationError where
     displayException VtyMissingTermEnvVar = "TERM environment variable not set"
 
 -- | A Vty configuration for Unix terminals.
-data Config =
-    Config { vmin :: Int
-           -- ^ The default is 1 character.
-           , vtime :: Int
-           -- ^ The default is 100 milliseconds, 0.1 seconds.
-           , inputFd :: Fd
-           -- ^ The input file descriptor to use. The default is
-           -- 'System.Posix.IO.stdInput'
-           , outputFd :: Fd
-           -- ^ The output file descriptor to use. The default is
-           -- 'System.Posix.IO.stdOutput'
-           , termName :: String
-           -- ^ The terminal name used to look up terminfo capabilities.
-           -- The default is the value of the TERM environment variable.
-           , colorMode :: ColorMode
-           -- ^ The color mode used to know how many colors the terminal
-           -- supports.
-           }
-           deriving (Show, Eq)
+data UnixConfig =
+    UnixConfig { vmin :: Int
+               -- ^ The default is 1 character.
+               , vtime :: Int
+               -- ^ The default is 100 milliseconds, 0.1 seconds.
+               , inputFd :: Fd
+               -- ^ The input file descriptor to use. The default is
+               -- 'System.Posix.IO.stdInput'
+               , outputFd :: Fd
+               -- ^ The output file descriptor to use. The default is
+               -- 'System.Posix.IO.stdOutput'
+               , termName :: String
+               -- ^ The terminal name used to look up terminfo capabilities.
+               -- The default is the value of the TERM environment variable.
+               , colorMode :: ColorMode
+               -- ^ The color mode used to know how many colors the terminal
+               -- supports.
+               }
+               deriving (Show, Eq)
 
-standardIOConfig :: IO Config
+standardIOConfig :: IO UnixConfig
 standardIOConfig = do
     mb <- lookupEnv termVariable
     case mb of
       Nothing -> throwIO VtyMissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
-        return $ Config { vmin      = 1
-                        , vtime     = 100
-                        , inputFd   = stdInput
-                        , outputFd  = stdOutput
-                        , termName  = t
-                        , colorMode = mcolorMode
-                        }
+        return $ UnixConfig { vmin      = 1
+                            , vtime     = 100
+                            , inputFd   = stdInput
+                            , outputFd  = stdOutput
+                            , termName  = t
+                            , colorMode = mcolorMode
+                            }
 
 termVariable :: String
 termVariable = "TERM"

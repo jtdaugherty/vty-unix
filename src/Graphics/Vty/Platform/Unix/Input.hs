@@ -145,10 +145,10 @@ import Data.Monoid ((<>))
 --
 -- The terminal device's mode flags are configured by the
 -- 'attributeControl' function.
-inputForConfig :: VtyUserConfig -> Config -> IO Input
-inputForConfig userConfig config@Config{ termName = termName
-                                       , inputFd = termFd
-                                       } = do
+inputForConfig :: VtyUserConfig -> UnixConfig -> IO Input
+inputForConfig userConfig config@UnixConfig{ termName = termName
+                                           , inputFd = termFd
+                                           } = do
     terminal <- Terminfo.setupTerm termName
     let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just termName]
         activeInputMap = classifyMapForTerm termName terminal `mappend` inputOverrides

@@ -36,7 +36,7 @@ import Data.List (isPrefixOf)
 import Data.Monoid ((<>))
 #endif
 
--- | Returns an `Output` for the terminal specified in `Config`.
+-- | Returns an `Output` for the terminal specified in `UnixConfig`.
 --
 -- The specific Output implementation used is hidden from the API user.
 -- All terminal implementations are assumed to perform more, or less,
@@ -50,9 +50,9 @@ import Data.Monoid ((<>))
 --
 --      * If TERM starts with "xterm", "screen" or "tmux", use XTermColor.
 --      * otherwise use the TerminfoBased driver.
-outputForConfig :: Config -> IO Output
-outputForConfig Config{ outputFd = fd, termName = termName
-                      , colorMode = colorMode } = do
+outputForConfig :: UnixConfig -> IO Output
+outputForConfig UnixConfig { outputFd = fd, termName = termName
+                           , colorMode = colorMode } = do
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
          -- Not an xterm-like terminal. try for generic terminfo.
