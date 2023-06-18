@@ -115,18 +115,13 @@ instance Exception VtyConfigurationError where
 -- | A Vty configuration for Unix terminals.
 data UnixConfig =
     UnixConfig { vmin :: Int
-               -- ^ The default is 1 character.
                , vtime :: Int
-               -- ^ The default is 100 milliseconds, 0.1 seconds.
                , inputFd :: Fd
-               -- ^ The input file descriptor to use. The default is
-               -- 'System.Posix.IO.stdInput'
+               -- ^ The input file descriptor to use.
                , outputFd :: Fd
-               -- ^ The output file descriptor to use. The default is
-               -- 'System.Posix.IO.stdOutput'
+               -- ^ The output file descriptor to use.
                , termName :: String
                -- ^ The terminal name used to look up terminfo capabilities.
-               -- The default is the value of the TERM environment variable.
                , colorMode :: ColorMode
                -- ^ The color mode used to know how many colors the terminal
                -- supports.
