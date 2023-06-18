@@ -25,10 +25,10 @@ mkVty :: VtyUserConfig -> Maybe UnixSettings -> IO Vty
 mkVty userConfig mUnixConfig = do
     settings <- fromMaybe <$> defaultSettings <*> pure mUnixConfig
 
-    when (allowCustomUnicodeWidthTables userConfig /= Just False) $
-        installCustomWidthTable (debugLog userConfig)
+    when (configAllowCustomUnicodeWidthTables userConfig /= Just False) $
+        installCustomWidthTable (configDebugLog userConfig)
                                 (Just $ settingTermName settings)
-                                (termWidthMaps userConfig)
+                                (configTermWidthMaps userConfig)
 
     input <- buildInput userConfig settings
     out <- buildOutput settings

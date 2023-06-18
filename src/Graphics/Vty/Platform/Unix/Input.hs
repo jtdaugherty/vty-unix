@@ -151,7 +151,7 @@ buildInput userConfig settings = do
         fd = settingInputFd settings
 
     terminal <- Terminfo.setupTerm tName
-    let inputOverrides = [(s,e) | (t,s,e) <- inputMap userConfig, t == Nothing || t == Just tName]
+    let inputOverrides = [(s,e) | (t,s,e) <- configInputMap userConfig, t == Nothing || t == Just tName]
         activeInputMap = classifyMapForTerm tName terminal `mappend` inputOverrides
     (setAttrs, unsetAttrs) <- attributeControl fd
     setAttrs
