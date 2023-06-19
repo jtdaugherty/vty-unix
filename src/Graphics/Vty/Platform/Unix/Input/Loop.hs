@@ -29,7 +29,15 @@ import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception (mask, try, SomeException)
+import qualified Data.ByteString.Char8 as BS8
+import qualified Data.ByteString as BS
+import Data.ByteString.Char8 (ByteString)
+import Data.Word (Word8)
+import Foreign (allocaArray)
+import Foreign.C.Types (CInt(..))
+import Foreign.Ptr (Ptr, castPtr)
 import Lens.Micro hiding ((<>~))
+import Lens.Micro.TH
 import Lens.Micro.Mtl
 import Control.Monad (when, mzero, forM_, forever)
 import Control.Monad.IO.Class (liftIO)
@@ -37,18 +45,6 @@ import Control.Monad.Trans (lift)
 import Control.Monad.Trans.State (StateT(..), evalStateT)
 import Control.Monad.State.Class (MonadState, modify)
 import Control.Monad.Trans.Reader (ReaderT(..), asks)
-
-import Lens.Micro.TH
-
-import qualified Data.ByteString.Char8 as BS8
-import qualified Data.ByteString as BS
-import Data.ByteString.Char8 (ByteString)
-import Data.Word (Word8)
-
-import Foreign (allocaArray)
-import Foreign.C.Types (CInt(..))
-import Foreign.Ptr (Ptr, castPtr)
-
 import System.Posix.IO (fdReadBuf, setFdOption, FdOption(..))
 import System.Posix.Types (Fd(..))
 
