@@ -119,7 +119,6 @@ where
 
 import Graphics.Vty.Input
 import Graphics.Vty.Config (VtyUserConfig(..))
-import Graphics.Vty.Input.Events
 
 import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Loop
