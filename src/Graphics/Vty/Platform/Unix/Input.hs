@@ -135,15 +135,6 @@ import System.Posix.Types (Fd(..))
 import Data.Monoid ((<>))
 #endif
 
--- | Set up the terminal with file descriptor `inputFd` for input.
--- Returns an 'Input'.
---
--- The table used to determine the 'Events' to produce for the input
--- bytes comes from 'classifyMapForTerm' which is then overridden by
--- the the applicable entries from the configuration's 'inputMap'.
---
--- The terminal device's mode flags are configured by the
--- 'attributeControl' function.
 buildInput :: VtyUserConfig -> UnixSettings -> IO Input
 buildInput userConfig settings = do
     let tName = settingTermName settings
