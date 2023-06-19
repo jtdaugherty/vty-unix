@@ -161,7 +161,7 @@ buildInput userConfig settings = do
                        activeInputMap
     let pokeIO = Catch $ do
             setAttrs
-            atomically $ writeTChan (eventChannel input) ResumeAfterSignal
+            atomically $ writeTChan (eventChannel input) ResumeAfterInterrupt
     _ <- installHandler windowChange pokeIO Nothing
     _ <- installHandler continueProcess pokeIO Nothing
 
