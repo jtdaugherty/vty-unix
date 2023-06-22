@@ -23,9 +23,8 @@ mkVty :: VtyUserConfig
       -- ^ The user's Vty configuration or the result of
       -- 'defaultConfig'.
       -> IO Vty
-mkVty userConfig = do
-    settings <- defaultSettings
-    mkVtyWithSettings userConfig settings
+mkVty userConfig =
+    mkVtyWithSettings userConfig =<< defaultSettings
 
 -- | Create a Vty handle. At most one handle should be created
 -- at a time for a given terminal device.
