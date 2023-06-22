@@ -23,21 +23,21 @@ library
     exposed-modules:  Data.Terminfo.Eval
                       Data.Terminfo.Parse
                       Graphics.Vty.Platform.Unix
-                      Graphics.Vty.Platform.Unix.Output
-                      Graphics.Vty.Platform.Unix.Output.TerminfoBased
-                      Graphics.Vty.Platform.Unix.Output.XTermColor
-                      Graphics.Vty.Platform.Unix.Output.Color
-                      Graphics.Vty.Platform.Unix.Settings
                       Graphics.Vty.Platform.Unix.Input
-                      Graphics.Vty.Platform.Unix.Input.Loop
-                      Graphics.Vty.Platform.Unix.Input.Terminfo
-                      Graphics.Vty.Platform.Unix.Input.Terminfo.ANSIVT
-                      Graphics.Vty.Platform.Unix.Input.Focus
-                      Graphics.Vty.Platform.Unix.Input.Paste
-                      Graphics.Vty.Platform.Unix.Input.Mouse
                       Graphics.Vty.Platform.Unix.Input.Classify
                       Graphics.Vty.Platform.Unix.Input.Classify.Parse
                       Graphics.Vty.Platform.Unix.Input.Classify.Types
+                      Graphics.Vty.Platform.Unix.Input.Focus
+                      Graphics.Vty.Platform.Unix.Input.Loop
+                      Graphics.Vty.Platform.Unix.Input.Mouse
+                      Graphics.Vty.Platform.Unix.Input.Paste
+                      Graphics.Vty.Platform.Unix.Input.Terminfo
+                      Graphics.Vty.Platform.Unix.Input.Terminfo.ANSIVT
+                      Graphics.Vty.Platform.Unix.Output
+                      Graphics.Vty.Platform.Unix.Output.Color
+                      Graphics.Vty.Platform.Unix.Output.TerminfoBased
+                      Graphics.Vty.Platform.Unix.Output.XTermColor
+                      Graphics.Vty.Platform.Unix.Settings
     build-depends:    base ^>=4.16.4.0,
                       blaze-builder,
                       bytestring,
