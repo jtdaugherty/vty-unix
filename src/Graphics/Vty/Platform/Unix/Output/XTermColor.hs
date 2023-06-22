@@ -4,7 +4,7 @@ module Graphics.Vty.Platform.Unix.Output.XTermColor
   )
 where
 
-import Graphics.Vty.Output.Interface
+import Graphics.Vty.Output
 import Graphics.Vty.Platform.Unix.Input.Mouse
 import Graphics.Vty.Platform.Unix.Input.Focus
 import Graphics.Vty.Attributes.Color (ColorMode)

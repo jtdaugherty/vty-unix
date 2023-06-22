@@ -24,7 +24,7 @@ module Graphics.Vty.Platform.Unix.Output
   )
 where
 
-import Graphics.Vty.Output.Interface
+import Graphics.Vty.Output
 
 import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Output.XTermColor as XTermColor

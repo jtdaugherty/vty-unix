@@ -16,7 +16,7 @@ import Data.Terminfo.Eval
 import Graphics.Vty.Attributes
 import Graphics.Vty.Image (DisplayRegion)
 import Graphics.Vty.DisplayAttributes
-import Graphics.Vty.Output.Interface
+import Graphics.Vty.Output
 
 import Blaze.ByteString.Builder (Write, writeToByteString, writeStorable, writeWord8)
 
