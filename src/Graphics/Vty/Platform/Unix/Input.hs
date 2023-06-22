@@ -115,23 +115,21 @@ module Graphics.Vty.Platform.Unix.Input
   )
 where
 
+import Control.Concurrent.STM
+#if !MIN_VERSION_base(4,11,0)
+import Data.Monoid ((<>))
+#endif
+import qualified System.Console.Terminfo as Terminfo
+import System.Posix.Signals.Exts
+import System.Posix.Terminal
+import System.Posix.Types (Fd(..))
+
 import Graphics.Vty.Input
 import Graphics.Vty.Config (VtyUserConfig(..))
 
 import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Loop
 import Graphics.Vty.Platform.Unix.Input.Terminfo (classifyMapForTerm)
-
-import Control.Concurrent.STM
-
-import qualified System.Console.Terminfo as Terminfo
-import System.Posix.Signals.Exts
-import System.Posix.Terminal
-import System.Posix.Types (Fd(..))
-
-#if !MIN_VERSION_base(4,11,0)
-import Data.Monoid ((<>))
-#endif
 
 buildInput :: VtyUserConfig -> UnixSettings -> IO Input
 buildInput userConfig settings = do
