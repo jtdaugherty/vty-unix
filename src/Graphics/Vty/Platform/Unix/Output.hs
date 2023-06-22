@@ -18,20 +18,18 @@ import Data.List (isPrefixOf)
 import Data.Monoid ((<>))
 #endif
 
--- | Returns an `Output` for the terminal specified in `UnixSettings`.
+-- | Returns an 'Output' for the terminal specified in 'UnixSettings'.
 --
--- The specific Output implementation used is hidden from the API user.
--- All terminal implementations are assumed to perform more, or less,
--- the same. Currently, all implementations use terminfo for at least
--- some terminal specific information.
+-- The specific output implementation chosen is based
+-- on the @TERM@ environment variable and ultimately
+-- uses @Graphics.Vty.Platform.Unix.Output.XTermColor@
+-- for terminals that look @xterm@-like or
+-- @Graphics.Vty.Platform.Unix.Output.TerminfoBased@ as a fallback
+-- otherwise.
 --
--- If a terminal implementation is developed for a terminal without
--- terminfo support then Vty should work as expected on that terminal.
---
--- Selection of a terminal is done as follows:
---
---      * If TERM starts with "xterm", "screen" or "tmux", use XTermColor.
---      * otherwise use the TerminfoBased driver.
+-- * If @TERM@ starts with @xterm@, @screen@, @rxvt@, or @tmux@, this
+--   will the @xterm@-based implementation.
+-- * Otherwise this will use the 'TerminfoBased' implementation.
 buildOutput :: UnixSettings -> IO Output
 buildOutput settings = do
     let termName = settingTermName settings
