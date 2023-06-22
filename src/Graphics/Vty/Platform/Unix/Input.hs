@@ -1,8 +1,6 @@
 {-# LANGUAGE RecordWildCards, CPP #-}
-
--- | This module provides the input layer for Vty, including methods
--- for initializing an 'Input' structure and reading 'Event's from the
--- terminal.
+-- | This module provides a function to build an 'Input' for Unix
+-- terminal devices.
 --
 -- Note that due to the evolution of terminal emulators, some keys
 -- and combinations will not reliably map to the expected events by
