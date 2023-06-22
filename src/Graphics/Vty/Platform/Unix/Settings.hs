@@ -50,6 +50,7 @@ data UnixSettings =
                  }
                  deriving (Show, Eq)
 
+-- | Default runtime settings used by the library.
 defaultSettings :: IO UnixSettings
 defaultSettings = do
     mb <- lookupEnv termVariable

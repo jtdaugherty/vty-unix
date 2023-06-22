@@ -16,12 +16,16 @@ import Graphics.Vty.Platform.Unix.Input
 -- | Create a Vty handle. At most one handle should be created at a time
 -- for a given terminal device.
 --
--- The specified configuration is added to the the configuration
--- loaded by 'userConfig' with the 'userConfig' configuration taking
--- precedence. See "Graphics.Vty.Config".
+-- For most applications, @mkVty defaultConfig Nothing@ is sufficient.
 --
--- For most applications @mkVty defaultConfig Nothing@ is sufficient.
-mkVty :: VtyUserConfig -> Maybe UnixSettings -> IO Vty
+-- This may raise 'VtyConfigurationError'.
+mkVty :: VtyUserConfig
+      -- ^ The user's Vty configuration or the result of
+      -- 'defaultConfig'.
+      -> Maybe UnixSettings
+      -- ^ Runtime settings to override defaults; see 'defaultSettings'
+      -- for defaults.
+      -> IO Vty
 mkVty userConfig mUnixConfig = do
     settings <- fromMaybe <$> defaultSettings <*> pure mUnixConfig
 
