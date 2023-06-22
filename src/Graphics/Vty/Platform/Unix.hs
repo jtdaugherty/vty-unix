@@ -20,7 +20,7 @@ import Graphics.Vty.Platform.Unix.Input
 -- loaded by 'userConfig' with the 'userConfig' configuration taking
 -- precedence. See "Graphics.Vty.Config".
 --
--- For most applications @mkVty defaultConfig@ is sufficient.
+-- For most applications @mkVty defaultConfig Nothing@ is sufficient.
 mkVty :: VtyUserConfig -> Maybe UnixSettings -> IO Vty
 mkVty userConfig mUnixConfig = do
     settings <- fromMaybe <$> defaultSettings <*> pure mUnixConfig
