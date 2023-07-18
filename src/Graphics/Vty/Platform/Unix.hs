@@ -29,6 +29,10 @@ mkVty userConfig =
 -- | Create a Vty handle. At most one handle should be created
 -- at a time for a given terminal device.
 --
+-- This also uses the value of @TERM@ to attempt to load and
+-- install a Unicode character width table map. For details, see
+-- 'Graphics.Vty.UnicodeWidthTable.Install.installUnicodeWidthTable'.
+--
 -- This may raise 'VtyConfigurationError'.
 mkVtyWithSettings :: VtyUserConfig
                   -- ^ The user's Vty configuration or the result of
