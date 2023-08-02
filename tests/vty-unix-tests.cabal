@@ -21,11 +21,9 @@ library
   hs-source-dirs:      src
   exposed-modules:     Verify
                        Verify.Graphics.Vty.Attributes
-  --                      Verify.Graphics.Vty.DisplayAttributes
                        Verify.Graphics.Vty.Prelude
                        Verify.Graphics.Vty.Picture
                        Verify.Graphics.Vty.Image
-  --                      Verify.Graphics.Vty.Span
                        Verify.Graphics.Vty.Output
                        Verify.Data.Terminfo.Parse
   build-depends:       base >= 4.8 && < 5,
