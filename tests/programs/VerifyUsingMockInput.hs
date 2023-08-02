@@ -8,17 +8,18 @@ module Main where
 import Verify.Graphics.Vty.Output
 
 import Graphics.Vty hiding (resize)
-import Graphics.Vty.Input.Events
+import Graphics.Vty.Platform.Unix.Input
 import Graphics.Vty.Platform.Unix.Input.Terminfo
+import Graphics.Vty.Platform.Unix.Input.Loop
+import Graphics.Vty.Platform.Unix.Settings
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
-import Lens.Micro ((^.))
 import Control.Monad
 
 import Data.IORef
-import Data.List (intersperse, reverse, nubBy)
+import Data.List (intersperse, nubBy)
 
 import System.Console.Terminfo
 import System.Posix.IO
@@ -112,12 +113,15 @@ assertEventsFromSynInput table inputSpec expectedEvents = do
     (writeFd, readFd) <- openPseudoTerminal
     (setTermAttr,_) <- attributeControl readFd
     setTermAttr
-    let testConfig = defaultConfig { inputFd = Just readFd
-                                   , termName = Just "dummy"
-                                   , vmin = Just 1
-                                   , vtime = Just 100
-                                   }
-    input <- initInput testConfig table
+    testSettings <- do
+        s <- defaultSettings
+        return $ s { settingInputFd = readFd
+                   , settingTermName = "dummy"
+                   , settingVmin = 1
+                   , settingVtime = 100
+                   }
+
+    input <- initInput testSettings table
     eventsRef <- newIORef []
     let writeWaitClose = do
             synthesizeInput inputSpec writeFd
@@ -130,10 +134,10 @@ assertEventsFromSynInput table inputSpec expectedEvents = do
     let readEvents = readLoop eventCount
         readLoop 0 = return ()
         readLoop n = do
-            e <- atomically $ readTChan $ input^.eventChannel
+            e <- atomically $ readTChan $ eventChannel input
             case e of
                 InputEvent ev -> modifyIORef eventsRef ((:) ev)
-                ResumeAfterSignal -> return ()
+                ResumeAfterInterrupt -> return ()
             readLoop (n - 1)
     genEventsUsingIoActions maxDuration writeWaitClose readEvents
     outEvents <- reverse <$> readIORef eventsRef
