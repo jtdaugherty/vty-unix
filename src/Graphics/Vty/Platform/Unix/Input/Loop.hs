@@ -22,6 +22,7 @@ where
 
 import Graphics.Vty.Input
 
+import Graphics.Vty.Platform.Unix.Settings
 import Graphics.Vty.Platform.Unix.Input.Classify
 import Graphics.Vty.Platform.Unix.Input.Classify.Types
 
@@ -159,8 +160,12 @@ runInputProcessorLoop classifyTable input devFd = do
                     (classify classifyTable)
         runReaderT (evalStateT loopInputProcessor s0) input
 
-initInput :: Fd -> Int -> Int -> ClassifyMap -> IO Input
-initInput devFd theVmin theVtime classifyTable = do
+initInput :: UnixSettings -> ClassifyMap -> IO Input
+initInput settings classifyTable = do
+    let devFd = settingInputFd settings
+        theVmin = settingVmin settings
+        theVtime = settingVtime settings
+
     setFdOption devFd NonBlockingRead False
     setTermTiming devFd theVmin (theVtime `div` 100)
 

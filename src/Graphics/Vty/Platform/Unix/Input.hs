@@ -141,10 +141,7 @@ buildInput userConfig settings = do
         activeInputMap = classifyMapForTerm tName terminal `mappend` inputOverrides
     (setAttrs, unsetAttrs) <- attributeControl fd
     setAttrs
-    input <- initInput fd
-                       (settingVmin settings)
-                       (settingVtime settings)
-                       activeInputMap
+    input <- initInput settings activeInputMap
     let pokeIO = Catch $ do
             setAttrs
             atomically $ writeTChan (eventChannel input) ResumeAfterInterrupt
