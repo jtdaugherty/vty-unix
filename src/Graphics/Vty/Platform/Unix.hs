@@ -1,3 +1,8 @@
+-- | The Unix implementation entry point for Vty.
+--
+-- This module provides 'mkVty' to create Vty handles for Unix
+-- terminals. Once a 'Vty' handle has been created, the rest of Vty's
+-- API can be used it with as usual; see the @vty@ package for details.
 module Graphics.Vty.Platform.Unix
   ( mkVty
   , mkVtyWithSettings
@@ -22,7 +27,7 @@ import Graphics.Vty.Platform.Unix.Input
 -- 'Graphics.Vty.Platform.Unix.Settings.VtyUnixConfigurationError'.
 mkVty :: VtyUserConfig
       -- ^ The user's Vty configuration or the result of
-      -- 'defaultConfig'.
+      -- 'Graphics.Vty.Config.defaultConfig'.
       -> IO Vty
 mkVty userConfig =
     mkVtyWithSettings userConfig =<< defaultSettings
