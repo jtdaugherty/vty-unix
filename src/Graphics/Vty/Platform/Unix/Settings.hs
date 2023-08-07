@@ -4,7 +4,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 module Graphics.Vty.Platform.Unix.Settings
-  ( UnixSettings(..)
+  ( VtyUnixConfigurationError(..)
+  , UnixSettings(..)
   , currentTerminalName
   , defaultSettings
   )
@@ -25,14 +26,15 @@ import System.Posix.Types (Fd(..))
 import Graphics.Vty.Attributes.Color
 import Graphics.Vty.Platform.Unix.Output.Color (detectColorMode)
 
--- | Type of errors that can be thrown when configuring VTY
-data VtyConfigurationError =
-    VtyMissingTermEnvVar
-    -- ^ TERM environment variable not set
+-- | Type of exceptions that can be raised when configuring Vty on a
+-- Unix system.
+data VtyUnixConfigurationError =
+    MissingTermEnvVar
+    -- ^ The @TERM@ environment variable is not set.
     deriving (Show, Eq, Typeable)
 
-instance Exception VtyConfigurationError where
-    displayException VtyMissingTermEnvVar = "TERM environment variable not set"
+instance Exception VtyUnixConfigurationError where
+    displayException MissingTermEnvVar = "TERM environment variable not set"
 
 -- | Runtime library settings for interacting with Unix terminals.
 data UnixSettings =
@@ -55,7 +57,7 @@ defaultSettings :: IO UnixSettings
 defaultSettings = do
     mb <- lookupEnv termVariable
     case mb of
-      Nothing -> throwIO VtyMissingTermEnvVar
+      Nothing -> throwIO MissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
         return $ UnixSettings { settingVmin      = 1
