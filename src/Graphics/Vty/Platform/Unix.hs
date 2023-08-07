@@ -18,7 +18,8 @@ import Graphics.Vty.Platform.Unix.Input
 -- values for 'UnixSettings'. If you need to override those, use
 -- 'mkVtyWithSettings'.
 --
--- This may raise 'VtyConfigurationError'.
+-- This may raise
+-- 'Graphics.Vty.Platform.Unix.Settings.VtyUnixConfigurationError'.
 mkVty :: VtyUserConfig
       -- ^ The user's Vty configuration or the result of
       -- 'defaultConfig'.
@@ -33,7 +34,8 @@ mkVty userConfig =
 -- install a Unicode character width table map. For details, see
 -- 'Graphics.Vty.UnicodeWidthTable.Install.installUnicodeWidthTable'.
 --
--- This may raise 'VtyConfigurationError'.
+-- This may raise
+-- 'Graphics.Vty.Platform.Unix.Settings.VtyUnixConfigurationError'.
 mkVtyWithSettings :: VtyUserConfig
                   -- ^ The user's Vty configuration or the result of
                   -- 'defaultConfig'.
