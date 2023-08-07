@@ -3,6 +3,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+-- | Runtime settings for @vty-unix@. Most applications will not need to
+-- change any of these settings.
 module Graphics.Vty.Platform.Unix.Settings
   ( VtyUnixConfigurationError(..)
   , UnixSettings(..)
@@ -37,9 +39,15 @@ instance Exception VtyUnixConfigurationError where
     displayException MissingTermEnvVar = "TERM environment variable not set"
 
 -- | Runtime library settings for interacting with Unix terminals.
+--
+-- See this page for details on @VTIME@ and @VMIN@:
+--
+-- http://unixwiz.net/techtips/termios-vmin-vtime.html
 data UnixSettings =
     UnixSettings { settingVmin :: Int
+                 -- ^ VMIN character count.
                  , settingVtime :: Int
+                 -- ^ VTIME setting in tenths of a second.
                  , settingInputFd :: Fd
                  -- ^ The input file descriptor to use.
                  , settingOutputFd :: Fd

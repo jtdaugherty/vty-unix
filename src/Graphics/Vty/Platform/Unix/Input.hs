@@ -2,15 +2,18 @@
 -- | This module provides a function to build an 'Input' for Unix
 -- terminal devices.
 --
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
+--
 -- Note that due to the evolution of terminal emulators, some keys
 -- and combinations will not reliably map to the expected events by
 -- any terminal program. There is no 1:1 mapping from key events to
 -- bytes read from the terminal input device. In very limited cases the
 -- terminal and vty's input process can be customized to resolve these
--- issues; see "Graphics.Vty.Config" for how to configure vty's input
--- processing.
+-- issues; see "Graphics.Vty.Config" to learn how to configure Vty's
+-- input processing.
 --
--- = VTY's Implementation
+-- = @vty-unix@ Implementation
 --
 -- There are two input modes:
 --

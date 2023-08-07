@@ -1,3 +1,7 @@
+-- | Terminfo-oriented terminal input parser.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Input.Terminfo
   ( classifyMapForTerm
   , specialSupportKeys

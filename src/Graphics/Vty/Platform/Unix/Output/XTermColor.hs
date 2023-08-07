@@ -1,4 +1,8 @@
 {-# LANGUAGE CPP #-}
+-- | Output implementation for xterm-like terminals.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Output.XTermColor
   ( reserveTerminal
   )

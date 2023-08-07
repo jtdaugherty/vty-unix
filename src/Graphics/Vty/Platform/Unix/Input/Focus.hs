@@ -1,3 +1,7 @@
+-- | Focus mode implementation.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Input.Focus
   ( requestFocusEvents
   , disableFocusEvents

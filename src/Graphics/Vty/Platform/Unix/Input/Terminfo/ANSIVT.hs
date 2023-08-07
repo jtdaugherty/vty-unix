@@ -1,10 +1,11 @@
--- | Input mappings for ANSI/VT100/VT50 terminals that is missing from
--- terminfo.
+-- | Input mappings for ANSI, VT100, and VT50 terminals that are missing
+-- from terminfo or that are sent regardless of terminfo by terminal
+-- emulators. For example, terminal emulators will often use VT50
+-- input bytes regardless of declared terminal type. This provides
+-- compatibility with programs that don't follow terminfo.
 --
--- Or that are sent regardless of terminfo by terminal emulators. EG:
--- Terminal emulators will often use VT50 input bytes regardless of
--- declared terminal type. This provides compatibility with programs
--- that don't follow terminfo.
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Input.Terminfo.ANSIVT
   ( classifyTable
   )

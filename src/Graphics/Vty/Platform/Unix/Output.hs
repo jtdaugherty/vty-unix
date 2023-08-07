@@ -1,6 +1,9 @@
 {-# LANGUAGE RecordWildCards, CPP #-}
 -- | This module provides a function to build an 'Output' for Unix
 -- terminal devices.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Output
   ( buildOutput
   )

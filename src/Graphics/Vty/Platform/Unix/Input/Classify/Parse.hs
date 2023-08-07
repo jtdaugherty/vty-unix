@@ -1,5 +1,8 @@
 -- | This module provides a simple parser for parsing input event
 -- control sequences.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 module Graphics.Vty.Platform.Unix.Input.Classify.Parse
   ( Parser
   , runParser

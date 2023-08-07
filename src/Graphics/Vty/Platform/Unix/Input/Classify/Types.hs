@@ -1,5 +1,7 @@
--- | This module exports the input classification type to avoid import
--- cycles between other modules that need this.
+-- | Data types for the input parser.
+--
+-- This module is exposed for testing purposes only; applications should
+-- never need to import this directly.
 {-# LANGUAGE StrictData #-}
 module Graphics.Vty.Platform.Unix.Input.Classify.Types
   ( KClass(..)
