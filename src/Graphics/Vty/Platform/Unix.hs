@@ -1,4 +1,7 @@
--- | The Unix implementation entry point for Vty.
+-- | The Unix implementation entry point for Vty. This module and
+-- @Graphics.Vty.Platform.Unix.Settings@ are the only modules you should
+-- ever need to import from this package; the rest is exported for
+-- testing purposes only.
 --
 -- This module provides 'mkVty' to create Vty handles for Unix
 -- terminals. Once a 'Vty' handle has been created, the rest of Vty's
