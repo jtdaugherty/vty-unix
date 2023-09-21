@@ -44,7 +44,7 @@ library
                       mtl,
                       unix,
                       terminfo,
-                      vty,
+                      vty >= 6.0,
                       deepseq,
                       vector,
                       parsec,
