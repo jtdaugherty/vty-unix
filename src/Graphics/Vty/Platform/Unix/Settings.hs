@@ -14,6 +14,7 @@ module Graphics.Vty.Platform.Unix.Settings
 where
 
 import Control.Exception (Exception(..), throwIO)
+import Control.Monad (when, void)
 #if !(MIN_VERSION_base(4,8,0))
 import Data.Monoid (Monoid(..))
 #endif
@@ -21,8 +22,9 @@ import Data.Monoid (Monoid(..))
 import Data.Semigroup (Semigroup(..))
 #endif
 import Data.Typeable (Typeable)
-import System.Posix.IO (stdInput, stdOutput)
 import System.Environment (lookupEnv)
+import System.IO (Handle, BufferMode(..), hReady, hSetBuffering, hGetChar, stdin)
+import System.Posix.IO (stdInput, stdOutput)
 import System.Posix.Types (Fd(..))
 
 import Graphics.Vty.Attributes.Color
@@ -68,6 +70,7 @@ defaultSettings = do
       Nothing -> throwIO MissingTermEnvVar
       Just t -> do
         mcolorMode <- detectColorMode t
+        flushStdin
         return $ UnixSettings { settingVmin      = 1
                               , settingVtime     = 100
                               , settingInputFd   = stdInput
@@ -81,3 +84,19 @@ termVariable = "TERM"
 
 currentTerminalName :: IO (Maybe String)
 currentTerminalName = lookupEnv termVariable
+
+flushStdin :: IO ()
+flushStdin = do
+    hSetBuffering stdin NoBuffering
+    whileM $ consume stdin
+
+whileM :: (Monad m) => m Bool -> m ()
+whileM act = do
+    continue <- act
+    when continue $ whileM act
+
+consume :: Handle -> IO Bool
+consume h = do
+    avail <- hReady h
+    when avail $ void $ hGetChar h
+    return avail
