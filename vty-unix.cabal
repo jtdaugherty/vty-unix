@@ -38,7 +38,7 @@ library
                       Graphics.Vty.Platform.Unix.Output.TerminfoBased
                       Graphics.Vty.Platform.Unix.Output.XTermColor
                       Graphics.Vty.Platform.Unix.Settings
-    build-depends:    base ^>=4.16.4.0,
+    build-depends:    base >= 4.8 && < 5,
                       blaze-builder,
                       bytestring,
                       mtl,
