@@ -16,3 +16,31 @@ support both Windows and Unix-based platforms, depend on
 [vty-crossplatform](https://github.com/jtdaugherty/vty-crossplatform)
 instead in step (1) above and import `mkVty` from
 `Graphics.Vty.CrossPlatform` in step (2).
+
+# Features
+
+* Supports a large number of terminals, i.e., vt100, ansi, hurd, linux,
+  `screen`, etc., or anything with a sufficient terminfo entry.
+
+* Supports Unicode output on terminals with UTF-8 support.
+
+* Automatically decodes keyboard keys into (key,[modifier]) tuples.
+
+* Supports a keypress timeout after for lone ESC. The timeout is
+  customizable.
+
+* Supports ANSI graphics modes (SGR as defined in `console_codes(4)`)
+  with a type-safe interface and graceful fallback for terminals
+  with limited or nonexistent support for such modes.
+
+* Supports "normal" and "extended" (SGR) mouse modes as described at
+  http://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking
+
+* Supports bracketed paste mode as described at
+  http://cirw.in/blog/bracketed-paste
+
+* Supports multi-column Unicode characters such as emoji characters. In
+  cases where Vty and your terminal emulator disagree on character
+  widths, Vty provides a tool `vty-build-width-table` and library
+  functionality to build a width table that will work for your terminal
+  and load it on application startup.
