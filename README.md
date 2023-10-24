@@ -14,7 +14,7 @@ sense for applications that support *only* Unix-based
 platforms for some reason, if your intention is to
 support both Windows and Unix-based platforms, depend on
 [vty-crossplatform](https://github.com/jtdaugherty/vty-crossplatform)
-instead in step (1) above and import `mkVty` from
+instead of `vty-unix` in step (1) above and import `mkVty` from
 `Graphics.Vty.CrossPlatform` in step (2).
 
 # Features
