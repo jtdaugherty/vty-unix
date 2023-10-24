@@ -4,7 +4,7 @@
 This package provides Unix terminal support for the
 [vty](https://github.com/jtdaugherty/vty) package. To use this package:
 
-1. Add a package dependency on `vty-unix`.
+1. Add package dependencies on `vty-unix` and `vty >= 6.0`.
 2. Import `mkVty` from `Graphics.Vty.Platform.Unix`.
 3. Use `mkVty` to initialize the terminal and construct a `Vty` value.
 4. Use the `vty` package's API with the `Vty` value as usual.
