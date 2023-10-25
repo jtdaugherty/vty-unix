@@ -9,6 +9,9 @@ maintainer:         cygnus@foobox.com
 copyright:          (c) 2023 Jonathan Daugherty
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
+extra-source-files: cbits/gwinsz.h
+                    cbits/gwinsz.c
+                    cbits/set_term_timing.c
 
 common warnings
     ghc-options: -Wall
