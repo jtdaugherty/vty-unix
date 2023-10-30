@@ -2,16 +2,22 @@ cabal-version:      3.0
 name:               vty-unix
 version:            0.1.0.0
 synopsis:           Unix backend for Vty
+description:        This package provides Unix terminal support for Vty.
 license:            BSD-3-Clause
 license-file:       LICENSE
 author:             Jonathan Daugherty
 maintainer:         cygnus@foobox.com
+category:           User Interfaces
 copyright:          (c) 2023 Jonathan Daugherty
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
 extra-source-files: cbits/gwinsz.h
                     cbits/gwinsz.c
                     cbits/set_term_timing.c
+
+source-repository head
+  type: git
+  location: https://github.com/jtdaugherty/vty-unix.git
 
 common warnings
     ghc-options: -Wall
