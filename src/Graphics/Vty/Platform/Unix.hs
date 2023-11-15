@@ -57,5 +57,5 @@ mkVtyWithSettings userConfig settings = do
                                 (configTermWidthMaps userConfig)
 
     input <- buildInput userConfig settings
-    out <- buildOutput settings
+    out <- buildOutput userConfig settings
     mkVtyFromPair input out

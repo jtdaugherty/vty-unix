@@ -27,9 +27,6 @@ import System.IO (Handle, BufferMode(..), hReady, hSetBuffering, hGetChar, stdin
 import System.Posix.IO (stdInput, stdOutput)
 import System.Posix.Types (Fd(..))
 
-import Graphics.Vty.Attributes.Color
-import Graphics.Vty.Platform.Unix.Output.Color (detectColorMode)
-
 -- | Type of exceptions that can be raised when configuring Vty on a
 -- Unix system.
 data VtyUnixConfigurationError =
@@ -56,9 +53,6 @@ data UnixSettings =
                  -- ^ The output file descriptor to use.
                  , settingTermName :: String
                  -- ^ The terminal name used to look up terminfo capabilities.
-                 , settingColorMode :: ColorMode
-                 -- ^ The color mode used to know how many colors the terminal
-                 -- supports.
                  }
                  deriving (Show, Eq)
 
@@ -69,14 +63,12 @@ defaultSettings = do
     case mb of
       Nothing -> throwIO MissingTermEnvVar
       Just t -> do
-        mcolorMode <- detectColorMode t
         flushStdin
         return $ UnixSettings { settingVmin      = 1
                               , settingVtime     = 100
                               , settingInputFd   = stdInput
                               , settingOutputFd  = stdOutput
                               , settingTermName  = t
-                              , settingColorMode = mcolorMode
                               }
 
 termVariable :: String

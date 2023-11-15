@@ -9,9 +9,11 @@ module Graphics.Vty.Platform.Unix.Output
   )
 where
 
+import Graphics.Vty.Config
 import Graphics.Vty.Output
 
 import Graphics.Vty.Platform.Unix.Settings
+import Graphics.Vty.Platform.Unix.Output.Color (detectColorMode)
 import Graphics.Vty.Platform.Unix.Output.XTermColor as XTermColor
 import Graphics.Vty.Platform.Unix.Output.TerminfoBased as TerminfoBased
 
@@ -33,11 +35,14 @@ import Data.Monoid ((<>))
 -- * If @TERM@ starts with @xterm@, @screen@, @rxvt@, or @tmux@, this
 --   will the @xterm@-based implementation.
 -- * Otherwise this will use the 'TerminfoBased' implementation.
-buildOutput :: UnixSettings -> IO Output
-buildOutput settings = do
+buildOutput :: VtyUserConfig -> UnixSettings -> IO Output
+buildOutput config settings = do
     let termName = settingTermName settings
         fd = settingOutputFd settings
-        colorMode = settingColorMode settings
+
+    colorMode <- case configPreferredColorMode config of
+        Nothing -> detectColorMode termName
+        Just m -> return m
 
     t <- if isXtermLike termName
          then XTermColor.reserveTerminal termName fd colorMode
