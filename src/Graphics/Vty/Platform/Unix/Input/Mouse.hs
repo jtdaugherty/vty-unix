@@ -83,11 +83,19 @@ middleButton = 1
 rightButton :: Int
 rightButton = 2
 
+-- | See https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Wheel-mice
 scrollUp :: Int
 scrollUp = 64
 
 scrollDown :: Int
 scrollDown = 65
+
+-- | See https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Other-buttons
+scrollLeft :: Int
+scrollLeft = 66
+
+scrollRight :: Int
+scrollRight = 67
 
 hasBitSet :: Int -> Int -> Bool
 hasBitSet val bit = val .&. bit > 0
@@ -113,6 +121,8 @@ getSGRButton mods =
                     , (rightButton,  BRight)
                     , (scrollUp,     BScrollUp)
                     , (scrollDown,   BScrollDown)
+                    , (scrollLeft,   BScrollLeft)
+                    , (scrollRight,  BScrollRight)
                     ]
     in case lookup (mods .&. buttonMask) buttonMap of
         Nothing -> failParse
