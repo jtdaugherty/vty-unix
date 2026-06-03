@@ -44,3 +44,21 @@ instead of `vty-unix` in step (1) above and import `mkVty` from
   widths, Vty provides a tool `vty-build-width-table` and library
   functionality to build a width table that will work for your terminal
   and load it on application startup.
+
+# Contributing
+
+If you decide to contribute, that's great! Here are some guidelines you
+should consider to make submitting patches easier for all concerned:
+
+ - Patches written completely or partially by AI are unlikely to be
+   accepted. Please disclose any AI use.
+ - If you want to take on big things, talk to me first; let's have a
+   design/vision discussion before you start coding. Create a GitHub
+   issue and we can use that as the place to hash things out.
+ - If you make changes, make them consistent with the syntactic
+   conventions already used in the codebase.
+ - Please provide Haddock documentation for any changes you make.
+ - Please do NOT include package version changes in your patches.
+   Package version changes are only done at release time when the full
+   scope of a release's changes can be evaluated to determine the
+   appropriate version change.
