@@ -74,6 +74,6 @@ executable vty-unix-build-width-table
   if !impl(ghc >= 8.0)
     build-depends:     semigroups >= 0.16
 
-  build-depends:       base,
+  build-depends:       base >= 4.8 && < 5,
                        vty,
                        ansi-terminal
