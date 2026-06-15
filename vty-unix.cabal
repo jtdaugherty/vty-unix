@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               vty-unix
-version:            0.2.0.0
+version:            0.3.0.0
 synopsis:           Unix backend for Vty
 description:        This package provides Unix terminal support for Vty.
 license:            BSD-3-Clause
@@ -53,7 +53,7 @@ library
                       mtl,
                       unix,
                       terminfo,
-                      vty >= 6.1,
+                      vty >= 6.6,
                       deepseq,
                       vector,
                       parsec,

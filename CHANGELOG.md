@@ -1,4 +1,13 @@
 
+0.3.0.0
+=======
+
+* Added support in `Input.Mouse` for parsing horizontal scrolling inputs
+  to work with Vty 6.6.
+* Improved the `vty-unix-build-width-table` tool (thanks Eric Mertens)
+  to make it more robust when the terminal fails to recognize the
+  `getCursorPosition` escape sequence.
+
 0.2.0.0
 =======
 
