@@ -120,6 +120,18 @@ writeCapOp ArithMinus = do
     v1 <- pop
     v0 <- pop
     push $ v0 - v1
+writeCapOp ArithMult = do
+    v1 <- pop
+    v0 <- pop
+    push $ v0 * v1
+writeCapOp ArithDiv = do
+    v1 <- pop
+    v0 <- pop
+    push $ v0 `div` v1
+writeCapOp ArithMod = do
+    v1 <- pop
+    v0 <- pop
+    push $ v0 `mod` v1
 writeCapOp CompareEq = do
     v1 <- pop
     v0 <- pop
