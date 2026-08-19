@@ -61,7 +61,7 @@ data CapOp =
       , conditionalParts :: ![(CapOps, CapOps)]
       }
     | BitwiseOr | BitwiseXOr | BitwiseAnd
-    | ArithPlus | ArithMinus
+    | ArithPlus | ArithMinus | ArithMult | ArithDiv | ArithMod
     | CompareEq | CompareLt | CompareGt
     deriving (Show, Eq)
 
@@ -75,6 +75,9 @@ instance NFData CapOp where
     rnf BitwiseAnd = ()
     rnf ArithPlus = ()
     rnf ArithMinus = ()
+    rnf ArithMult = ()
+    rnf ArithDiv = ()
+    rnf ArithMod = ()
     rnf CompareEq = ()
     rnf CompareLt = ()
     rnf CompareGt = ()
@@ -256,6 +259,9 @@ arithOpParser :: CapParser BuildResults
 arithOpParser
     =   plusOp
     <|> minusOp
+    <|> multOp
+    <|> divOp
+    <|> modOp
     where
         plusOp = do
             _ <- char '+'
@@ -265,6 +271,18 @@ arithOpParser
             _ <- char '-'
             incOffset 1
             return $ BuildResults 0 [ ArithMinus ] [ ]
+        multOp = do
+            _ <- char '*'
+            incOffset 1
+            return $ BuildResults 0 [ ArithMult ] [ ]
+        divOp = do
+            _ <- char '/'
+            incOffset 1
+            return $ BuildResults 0 [ ArithDiv ] [ ]
+        modOp = do
+            _ <- char 'm'
+            incOffset 1
+            return $ BuildResults 0 [ ArithMod ] [ ]
 
 literalIntOpParser :: CapParser BuildResults
 literalIntOpParser = do
