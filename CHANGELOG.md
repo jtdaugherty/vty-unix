@@ -1,4 +1,10 @@
 
+0.4.0.0
+=======
+
+* Added support for terminfo operators "*", "/", and "m" (thanks Chris
+  Forno)
+
 0.3.0.0
 =======
 
