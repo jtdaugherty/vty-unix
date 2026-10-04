@@ -16,9 +16,10 @@ import qualified Data.ByteString as BS
 import Data.ByteString.Internal (toForeignPtr)
 import Data.Terminfo.Parse
 import Data.Terminfo.Eval
+import qualified Data.Vector as Vector
 
 import Graphics.Vty.Attributes
-import Graphics.Vty.Image (DisplayRegion)
+import Graphics.Vty.Image (DisplayRegion, regionHeight)
 import Graphics.Vty.DisplayAttributes
 import Graphics.Vty.Output
 
@@ -257,14 +258,16 @@ terminfoDisplayContext tActual terminfoCaps r = return dc
     where dc = DisplayContext
             { contextDevice = tActual
             , contextRegion = r
-            , writeMoveCursor = \x y -> writeCapExpr (cup terminfoCaps) [toEnum y, toEnum x]
+            , writeMoveCursor = \x y -> case x of
+                0 | Just w <- rowStarts cache Vector.!? y -> w
+                _ -> writeCapExpr (cup terminfoCaps) [toEnum y, toEnum x]
             , writeShowCursor = case cnorm terminfoCaps of
                 Nothing -> error "this terminal does not support show cursor"
                 Just c -> writeCapExpr c []
             , writeHideCursor = case civis terminfoCaps of
                 Nothing -> error "this terminal does not support hide cursor"
                 Just c -> writeCapExpr c []
-            , writeSetAttr = terminfoWriteSetAttr dc terminfoCaps
+            , writeSetAttr = terminfoWriteSetAttr dc terminfoCaps cache
             , writeDefaultAttr = \urlsEnabled ->
                 writeCapExpr (setDefaultAttr terminfoCaps) [] `mappend`
                 (if urlsEnabled then writeURLEscapes EndLink else mempty) `mappend`
@@ -275,6 +278,27 @@ terminfoDisplayContext tActual terminfoCaps r = return dc
             , writeRowEnd = writeCapExpr (clearEol terminfoCaps) []
             , inlineHack = return ()
             }
+          cache = escapeCache terminfoCaps r
+
+-- | Typical escape sequences that a frame needs many times.
+--
+-- 'DisplayContext' is reused for many frames, so each sequence
+-- is computed only once per context, lazily on first use.
+data EscapeCache = EscapeCache
+    { rowStarts :: Vector.Vector Write
+    , foreColors :: Vector.Vector Write
+    , backColors :: Vector.Vector Write
+    }
+
+escapeCache :: TerminfoCaps -> DisplayRegion -> EscapeCache
+escapeCache terminfoCaps r = EscapeCache
+    { rowStarts = Vector.generate (regionHeight r) $ \y ->
+        writeCapExpr (cup terminfoCaps) [toEnum y, 0]
+    , foreColors = colors (setForeColor terminfoCaps)
+    , backColors = colors (setBackColor terminfoCaps)
+    }
+    where
+        colors cap = Vector.generate 256 $ \i -> writeCapExpr cap [toEnum i]
 
 -- | Write the escape sequences that are used in some terminals to
 -- include embedded hyperlinks. As of yet, this information isn't
@@ -326,8 +350,8 @@ writeURLEscapes NoLinkChange =
 --
 -- Note that this optimizes for fewer state changes followed by fewer
 -- bytes.
-terminfoWriteSetAttr :: DisplayContext -> TerminfoCaps -> Bool -> FixedAttr -> Attr -> DisplayAttrDiff -> Write
-terminfoWriteSetAttr dc terminfoCaps urlsEnabled prevAttr reqAttr diffs =
+terminfoWriteSetAttr :: DisplayContext -> TerminfoCaps -> EscapeCache -> Bool -> FixedAttr -> Attr -> DisplayAttrDiff -> Write
+terminfoWriteSetAttr dc terminfoCaps cache urlsEnabled prevAttr reqAttr diffs =
     urlAttrs urlsEnabled `mappend` case (foreColorDiff diffs == ColorToDefault) || (backColorDiff diffs == ColorToDefault) of
         -- The only way to reset either color, portably, to the default
         -- is to use either the set state capability or the set default
@@ -420,8 +444,12 @@ terminfoWriteSetAttr dc terminfoCaps urlsEnabled prevAttr reqAttr diffs =
                     hardcodeColor side (r, g, b)
                 _ ->
                     error "clampColor should remove rgb colors in standard mode"
-        writeColor side c =
-            writeCapExpr (setSideColor side terminfoCaps) [toEnum $ colorMap c]
+        writeColor side c = case cachedSideColors side Vector.!? colorMap c of
+            Just w -> w
+            Nothing -> writeCapExpr (setSideColor side terminfoCaps) [toEnum $ colorMap c]
+
+        cachedSideColors Foreground = foreColors cache
+        cachedSideColors Background = backColors cache
 
 -- a color can either be in the foreground or the background
 data ColorSide = Foreground | Background
