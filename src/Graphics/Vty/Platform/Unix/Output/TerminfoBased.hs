@@ -10,9 +10,11 @@ module Graphics.Vty.Platform.Unix.Output.TerminfoBased
   )
 where
 
+import Control.Exception (bracket_)
 import Control.Monad (when)
 import Data.Bits (shiftL, (.&.))
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS8
 import Data.ByteString.Internal (toForeignPtr)
 import Data.Terminfo.Parse
 import Data.Terminfo.Eval
@@ -182,7 +184,7 @@ reserveTerminal termName outFd colorMode = do
                 case rawSize of
                     (w, h)  | w < 0 || h < 0 -> fail $ "getwinsize returned < 0 : " ++ show rawSize
                             | otherwise      -> return (w,h)
-            , outputByteBuffer = \outBytes -> do
+            , outputByteBuffer = synchronized $ \outBytes -> do
                 let (fptr, offset, len) = toForeignPtr outBytes
                 actualLen <- withForeignPtr fptr
                              $ \ptr -> fdWriteAll outFd (ptr `plusPtr` offset) len 0
@@ -203,6 +205,18 @@ reserveTerminal termName outFd colorMode = do
         sendCap s = sendCapToTerminal t (s terminfoCaps)
         maybeSendCap s = when (isJust $ s terminfoCaps) . sendCap (fromJust . s)
     return t
+  where
+    -- Use synchronized output (DEC mode 2026) when available.
+    --
+    -- See https://github.com/contour-terminal/vt-extensions/blob/master/synchronized-output.md
+    -- for more information.
+    synchronized :: (BS.ByteString -> IO ()) -> BS.ByteString -> IO ()
+    synchronized write buf =
+        bracket_ (write beginSynchronizedUpdate) (write endSynchronizedUpdate) (write buf)
+
+    beginSynchronizedUpdate, endSynchronizedUpdate :: BS.ByteString
+    beginSynchronizedUpdate = BS8.pack "\ESC[?2026h"
+    endSynchronizedUpdate = BS8.pack "\ESC[?2026l"
 
 requireCap :: Terminfo.Terminal -> String -> IO CapExpression
 requireCap ti capName
