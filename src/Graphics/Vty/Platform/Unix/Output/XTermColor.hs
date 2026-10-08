@@ -18,6 +18,7 @@ import Blaze.ByteString.Builder (writeToByteString)
 import Blaze.ByteString.Builder.Word (writeWord8)
 
 import qualified Data.ByteString.Char8 as BS8
+import qualified Data.ByteString.UTF8 as UTF8
 import Data.ByteString.Char8 (ByteString)
 import Foreign.Ptr (castPtr)
 
@@ -148,5 +149,5 @@ setWindowTitle o title = do
         sanitize = concatMap sanitizeChar
         sanitizeChar c | not (isPrint c) = showLitChar c ""
                        | otherwise = [c]
-    let buf = BS8.pack $ "\ESC]2;" <> sanitize title <> "\007"
+    let buf = UTF8.fromString $ "\ESC]2;" <> sanitize title <> "\007"
     outputByteBuffer o buf
