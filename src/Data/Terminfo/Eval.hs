@@ -16,7 +16,7 @@ import Data.Terminfo.Parse
 
 import Control.Monad
 import Control.Monad.State.Strict
-import Control.Monad.Writer
+import Control.Monad.Writer.CPS
 
 import Data.Bits ((.|.), (.&.), xor)
 import Data.List
