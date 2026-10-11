@@ -1,4 +1,13 @@
 
+0.5.0.0
+=======
+
+Enhancements:
+
+* Overall performance has been improved due to a change from the lazy to
+  CPS-based Writer monad. (thanks Andrzej Rybczak)
+* Terminal titles are now UTF-8 encoded. (thanks Andrzej Rybczak)
+
 0.4.0.0
 =======
 
