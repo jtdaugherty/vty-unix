@@ -440,7 +440,7 @@ hardcodeColor side (r, g, b) =
     where
         writeChar = writeWord8 . fromIntegral . fromEnum
         writeStr = mconcat . map writeChar
-        writeColor = writeStr . show
+        writeColor = writeDecimal . fromIntegral
         delimiter = writeChar ';'
         -- 38/48 are used to set whether we should write to the
         -- foreground/background. I really don't want to know why.

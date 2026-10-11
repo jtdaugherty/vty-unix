@@ -7,6 +7,7 @@
 -- given parameters.
 module Data.Terminfo.Eval
   ( writeCapExpr
+  , writeDecimal
   )
 where
 
@@ -14,7 +15,6 @@ import Blaze.ByteString.Builder.Word
 import Blaze.ByteString.Builder
 import Data.Terminfo.Parse
 
-import Control.Monad
 import Control.Monad.State.Strict
 import Control.Monad.Writer.CPS
 
@@ -65,6 +65,21 @@ writeCapExpr cap params =
         s0 = EvalState [] cap params'
     in snd $ runWriter (runStateT (writeCapOps (capOps cap)) s0)
 
+writeDecimal :: Word -> Write
+writeDecimal n0
+    -- Numbers below 1000, such as colors and most cursor positions, are
+    -- written without recursion, which is faster.
+    | n0 < 10 = digit ones
+    | n0 < 100 = digit tens `mappend` digit ones
+    | n0 < 1000 = digit hundreds `mappend` digit tens `mappend` digit ones
+    | otherwise = writeDecimal n3 `mappend` digit hundreds `mappend` digit tens `mappend` digit ones
+    where
+        -- Strict pairs let GHC unbox the digits.
+        !(n1, ones) = n0 `divMod` 10
+        !(n2, tens) = n1 `divMod` 10
+        !(n3, hundreds) = n2 `divMod` 10
+        digit d = writeWord8 (48 + fromIntegral d)
+
 writeCapOps :: CapOps -> Eval ()
 writeCapOps = mapM_ writeCapOp
 
@@ -74,8 +89,7 @@ writeCapOp (Bytes !offset !count) = do
     let bytes = Vector.take count $ Vector.drop offset (capBytes cap)
     Vector.forM_ bytes $ tell.writeWord8
 writeCapOp DecOut = do
-    p <- pop
-    forM_ (show p) $ tell.writeWord8.toEnum.fromEnum
+    pop >>= tell . writeDecimal
 writeCapOp CharOut = do
     pop >>= tell.writeWord8.toEnum.fromEnum
 writeCapOp (PushParam pn) = do
