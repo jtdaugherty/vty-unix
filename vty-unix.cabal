@@ -50,7 +50,7 @@ library
     build-depends:    base >= 4.8 && < 5,
                       blaze-builder,
                       bytestring,
-                      mtl,
+                      mtl >= 2.3,
                       unix,
                       terminfo,
                       vty >= 6.6,
